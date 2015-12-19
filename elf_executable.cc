@@ -7,51 +7,60 @@
 namespace {
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
-  *((uint##bits##_t*)(file.buffer()+(offset)))
+  *((uint##bits##_t*)(buf+(offset)))
 
-static uint8_t ExtractElfHeaderClass(const File &file)
+static uint8_t
+ExtractElfHeaderClass(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(8, 4);
 }
 
-static uint8_t ExtractElfHeaderData(const File &file)
+static uint8_t
+ExtractElfHeaderData(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(8, 5);
 }
 
-static uint8_t ExtractElfHeaderShortVersion(const File &file)
+static uint8_t
+ExtractElfHeaderShortVersion(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(8, 6);
 }
 
-static uint8_t ExtractElfHeaderOsAbi(const File &file)
+static uint8_t
+ExtractElfHeaderOsAbi(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(8, 7);
 }
 
-static uint8_t ExtractElfHeaderAbiVersion(const File &file)
+static uint8_t
+ExtractElfHeaderAbiVersion(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(8, 8);
 }
 
-static uint16_t ExtractElfHeaderType(const File &file)
+static uint16_t
+ExtractElfHeaderType(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(16, EI_NIDENT);
 }
 
-static uint16_t ExtractElfHeaderMachine(const File &file)
+static uint16_t
+ExtractElfHeaderMachine(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(16, EI_NIDENT+2);
 }
 
-static uint32_t ExtractElfHeaderLongVersion(const File &file)
+static uint32_t
+ExtractElfHeaderLongVersion(const uint8_t *const buf)
 {
   return EXTRACT_ELF_FIELD(32, EI_NIDENT+4);
 }
 
-static uint64_t ExtractElfHeaderEntryPoint(const File &file)
+static uint64_t
+ExtractElfHeaderEntryPoint(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(32, EI_NIDENT+8);
     }
@@ -62,9 +71,10 @@ static uint64_t ExtractElfHeaderEntryPoint(const File &file)
   return -1;
 }
 
-static uint64_t ExtractElfHeaderProgramHeaderOffset(const File &file)
+static uint64_t
+ExtractElfHeaderProgramHeaderOffset(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(32, EI_NIDENT+12);
     }
@@ -75,9 +85,10 @@ static uint64_t ExtractElfHeaderProgramHeaderOffset(const File &file)
   return -1;
 }
 
-static uint64_t ExtractElfHeaderSectionHeaderOffset(const File &file)
+static uint64_t
+ExtractElfHeaderSectionHeaderOffset(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(32, EI_NIDENT+16);
     }
@@ -88,9 +99,10 @@ static uint64_t ExtractElfHeaderSectionHeaderOffset(const File &file)
   return -1;
 }
 
-static uint32_t ExtractElfHeaderFlags(const File &file)
+static uint32_t
+ExtractElfHeaderFlags(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(32, EI_NIDENT+20);
     }
@@ -101,9 +113,10 @@ static uint32_t ExtractElfHeaderFlags(const File &file)
   return -1;
 }
 
-static uint16_t ExtractElfHeaderHeaderSize(const File &file)
+static uint16_t
+ExtractElfHeaderHeaderSize(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(16, EI_NIDENT+24);
     }
@@ -114,9 +127,10 @@ static uint16_t ExtractElfHeaderHeaderSize(const File &file)
   return -1;
 }
 
-static uint16_t ExtractElfHeaderProgramHeaderSize(const File &file)
+static uint16_t
+ExtractElfHeaderProgramHeaderSize(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(16, EI_NIDENT+26);
     }
@@ -127,9 +141,10 @@ static uint16_t ExtractElfHeaderProgramHeaderSize(const File &file)
   return -1;
 }
 
-static uint16_t ExtractElfHeaderProgramHeaderCount(const File &file)
+static uint16_t
+ExtractElfHeaderProgramHeaderCount(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(16, EI_NIDENT+28);
     }
@@ -140,9 +155,10 @@ static uint16_t ExtractElfHeaderProgramHeaderCount(const File &file)
   return -1;
 }
 
-static uint16_t ExtractElfHeaderSectionHeaderSize(const File &file)
+static uint16_t
+ExtractElfHeaderSectionHeaderSize(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(16, EI_NIDENT+30);
     }
@@ -153,9 +169,10 @@ static uint16_t ExtractElfHeaderSectionHeaderSize(const File &file)
   return -1;
 }
 
-static uint16_t ExtractElfHeaderSectionHeaderCount(const File &file)
+static uint16_t
+ExtractElfHeaderSectionHeaderCount(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(16, EI_NIDENT+32);
     }
@@ -166,9 +183,10 @@ static uint16_t ExtractElfHeaderSectionHeaderCount(const File &file)
   return -1;
 }
 
-static uint16_t ExtractElfHeaderSectionHeaderNamesIndex(const File &file)
+static uint16_t
+ExtractElfHeaderSectionHeaderNamesIndex(const uint8_t *const buf)
 {
-  switch (ExtractElfHeaderClass(file)) {
+  switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: {
       return EXTRACT_ELF_FIELD(16, EI_NIDENT+34);
     }
@@ -179,33 +197,8 @@ static uint16_t ExtractElfHeaderSectionHeaderNamesIndex(const File &file)
   return -1;
 }
 
-#undef EXTRACT_ELF_FIELD
-
-static ElfExecutable::Header *ParseElfHeader(const File &file)
-{
-  return new ElfExecutable::Header {
-    ExtractElfHeaderClass(file),
-    ExtractElfHeaderData(file),
-    ExtractElfHeaderShortVersion(file),
-    ExtractElfHeaderOsAbi(file),
-    ExtractElfHeaderAbiVersion(file),
-    ExtractElfHeaderType(file),
-    ExtractElfHeaderMachine(file),
-    ExtractElfHeaderLongVersion(file),
-    ExtractElfHeaderEntryPoint(file),
-    ExtractElfHeaderProgramHeaderOffset(file),
-    ExtractElfHeaderSectionHeaderOffset(file),
-    ExtractElfHeaderFlags(file),
-    ExtractElfHeaderHeaderSize(file),
-    ExtractElfHeaderProgramHeaderSize(file),
-    ExtractElfHeaderProgramHeaderCount(file),
-    ExtractElfHeaderSectionHeaderSize(file),
-    ExtractElfHeaderSectionHeaderCount(file),
-    ExtractElfHeaderSectionHeaderNamesIndex(file),
-  };
-}
-
-static bool ValidElfHeaderClass(const uint8_t kClass)
+static bool
+ValidElfHeaderClass(const uint8_t kClass)
 {
   switch (kClass) {
     case ELFCLASS32: return true;
@@ -215,7 +208,8 @@ static bool ValidElfHeaderClass(const uint8_t kClass)
   return false;
 }
 
-static bool ValidElfHeaderData(const uint8_t kData)
+static bool
+ValidElfHeaderData(const uint8_t kData)
 {
   switch (kData) {
     case ELFDATA2LSB: return true;
@@ -225,7 +219,8 @@ static bool ValidElfHeaderData(const uint8_t kData)
   return false;
 }
 
-static bool ValidElfHeaderShortVersion(const uint8_t kShortVersion)
+static bool
+ValidElfHeaderShortVersion(const uint8_t kShortVersion)
 {
   switch (kShortVersion) {
     case EV_CURRENT: return true;
@@ -234,7 +229,8 @@ static bool ValidElfHeaderShortVersion(const uint8_t kShortVersion)
   return false;
 }
 
-static bool ValidElfHeaderOsAbi(const uint8_t kOsAbi)
+static bool
+ValidElfHeaderOsAbi(const uint8_t kOsAbi)
 {
   switch (kOsAbi) {
     case ELFOSABI_SYSV: return true;
@@ -252,7 +248,8 @@ static bool ValidElfHeaderOsAbi(const uint8_t kOsAbi)
   return false;
 }
 
-static bool ValidElfHeaderAbiVersion(const uint8_t kAbiVersion)
+static bool
+ValidElfHeaderAbiVersion(const uint8_t kAbiVersion)
 {
   switch (kAbiVersion) {
     case 0: return true;
@@ -261,7 +258,8 @@ static bool ValidElfHeaderAbiVersion(const uint8_t kAbiVersion)
   return false;
 }
 
-static bool ValidElfHeaderType(const uint16_t kType)
+static bool
+ValidElfHeaderType(const uint16_t kType)
 {
   switch (kType) {
     case ET_REL: return true;
@@ -273,7 +271,8 @@ static bool ValidElfHeaderType(const uint16_t kType)
   return false;
 }
 
-static bool ValidElfHeaderMachine(const uint16_t kMachine)
+static bool
+ValidElfHeaderMachine(const uint16_t kMachine)
 {
   switch (kMachine) {
     case EM_M32: return true;
@@ -299,7 +298,8 @@ static bool ValidElfHeaderMachine(const uint16_t kMachine)
   return false;
 }
 
-static bool ValidElfHeaderLongVersion(const uint32_t kLongVersion)
+static bool
+ValidElfHeaderLongVersion(const uint32_t kLongVersion)
 {
   switch (kLongVersion) {
     case EV_CURRENT: return true;
@@ -308,22 +308,26 @@ static bool ValidElfHeaderLongVersion(const uint32_t kLongVersion)
   return false;
 }
 
-static bool ValidElfHeaderEntryPoint(const uint64_t kEntryPoint)
+static bool
+ValidElfHeaderEntryPoint(const uint64_t kEntryPoint)
 {
   return true;
 }
 
-static bool ValidElfHeaderProgramHeaderOffset(const uint64_t kProgramHeaderOffset)
+static bool
+ValidElfHeaderProgramHeaderOffset(const uint64_t kProgramHeaderOffset)
 {
   return true;
 }
 
-static bool ValidElfHeaderSectionHeaderOffset(const uint64_t kSectionHeaderOffset)
+static bool
+ValidElfHeaderSectionHeaderOffset(const uint64_t kSectionHeaderOffset)
 {
   return true;
 }
 
-static bool ValidElfHeaderFlags(const uint32_t kFlags)
+static bool
+ValidElfHeaderFlags(const uint32_t kFlags)
 {
   switch (kFlags) {
     case 0: return true;
@@ -332,7 +336,8 @@ static bool ValidElfHeaderFlags(const uint32_t kFlags)
   return false;
 }
 
-static bool ValidElfHeaderHeaderSize(const uint16_t kHeaderSize)
+static bool
+ValidElfHeaderHeaderSize(const uint16_t kHeaderSize)
 {
   switch (kHeaderSize) {
     case EI_NIDENT + 36: return true;
@@ -342,22 +347,26 @@ static bool ValidElfHeaderHeaderSize(const uint16_t kHeaderSize)
   return false;
 }
 
-static bool ValidElfHeaderProgramHeaderSize(const uint16_t kProgramHeaderSize)
+static bool
+ValidElfHeaderProgramHeaderSize(const uint16_t kProgramHeaderSize)
 {
   return true;
 }
 
-static bool ValidElfHeaderProgramHeaderCount(const uint16_t kProgramHeaderCount)
+static bool
+ValidElfHeaderProgramHeaderCount(const uint16_t kProgramHeaderCount)
 {
   return true;
 }
 
-static bool ValidElfHeaderSectionHeaderSize(const uint16_t kSectionHeaderSize)
+static bool
+ValidElfHeaderSectionHeaderSize(const uint16_t kSectionHeaderSize)
 {
   return true;
 }
 
-static bool ValidElfHeaderSectionHeaderCount(const uint16_t kSectionHeaderCount)
+static bool
+ValidElfHeaderSectionHeaderCount(const uint16_t kSectionHeaderCount)
 {
   return true;
 }
@@ -368,8 +377,13 @@ ValidElfHeaderSectionHeaderNamesIndex(const uint16_t kSectionHeaderNamesIndex)
   return true;
 }
 
-static bool ValidElfHeader(const ElfExecutable::Header *const head)
+static bool
+ValidElfHeader(const ElfExecutable::Header *const head)
 {
+  if (!head) {
+    return false;
+  }
+
   if (!ValidElfHeaderClass(head->kClass)) {
     return false;
   }
@@ -444,38 +458,501 @@ static bool ValidElfHeader(const ElfExecutable::Header *const head)
   return true;
 }
 
+static uint32_t
+ExtractElfProgramHeaderType(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint32_t
+ExtractElfProgramHeaderFlags(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfProgramHeaderOffset(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfProgramHeaderVirtualAddress(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfProgramHeaderPhysicalAddress(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfProgramHeaderFileSize(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfProgramHeaderMemorySize(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfProgramHeaderAlign(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static bool
+ValidElfProgramHeaderType(const uint32_t kType)
+{
+  switch (kType) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid type\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderFlags(const uint32_t kFlags)
+{
+  switch (kFlags) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid flags\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderOffset(const uint64_t kOffset)
+{
+  switch (kOffset) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid offset\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderVirtualAddress(const uint64_t kVirtualAddress)
+{
+  switch (kVirtualAddress) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid virtual address\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderPhysicalAddress(const uint64_t kPhysicalAddress)
+{
+  switch (kPhysicalAddress) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid physical address\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderFileSize(const uint64_t kFileSize)
+{
+  switch (kFileSize) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid file size\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderMemorySize(const uint64_t kMemorySize)
+{
+  switch (kMemorySize) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid memory size\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeaderAlign(const uint64_t kAlign)
+{
+  switch (kAlign) {
+  }
+  fprintf(stderr, "ELF Program Header has invalid align\n");
+  return false;
+}
+
+static bool
+ValidElfProgramHeader(const ElfExecutable::ProgramHeader &program_header)
+{
+  if (!ValidElfProgramHeaderType(program_header.kType)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderFlags(program_header.kFlags)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderOffset(program_header.kOffset)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderVirtualAddress(program_header.kVirtualAddress)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderPhysicalAddress(program_header.kPhysicalAddress)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderFileSize(program_header.kFileSize)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderMemorySize(program_header.kMemorySize)) {
+    return false;
+  }
+
+  if (!ValidElfProgramHeaderAlign(program_header.kAlign)) {
+    return false;
+  }
+
+  return true;
+}
+
+static uint32_t
+ExtractElfSectionHeaderName(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint32_t
+ExtractElfSectionHeaderType(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfSectionHeaderFlags(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfSectionHeaderAddress(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfSectionHeaderOffset(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfSectionHeaderSize(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint32_t
+ExtractElfSectionHeaderLink(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint32_t
+ExtractElfSectionHeaderInfo(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfSectionHeaderAddressAlignment(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static uint64_t
+ExtractElfSectionHeaderEntrySize(const uint8_t *const buf,
+    const ElfExecutable::Header *const header)
+{
+
+}
+
+static bool
+ValidElfSectionHeaderName(const uint32_t kName)
+{
+  switch (kName) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid name\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderType(const uint32_t kType)
+{
+  switch (kType) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid type\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderFlags(const uint64_t kFlags)
+{
+  switch (kFlags) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid flags\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderAddress(const uint64_t kAddress)
+{
+  switch (kAddress) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid address\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderOffset(const uint64_t kOffset)
+{
+  switch (kOffset) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid offset\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderSize(const uint64_t kSize)
+{
+  switch (kSize) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid size\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderLink(const uint32_t kLink)
+{
+  switch (kLink) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid link\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderInfo(const uint32_t kInfo)
+{
+  switch (kInfo) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid info\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderAddressAlignment(const uint64_t kAddressAlignment)
+{
+  switch (kAddressAlignment) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid address alignment\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeaderEntrySize(const uint64_t kEntrySize)
+{
+  switch (kEntrySize) {
+  }
+  fprintf(stderr, "ELF Section Header has invalid entry size\n");
+  return false;
+}
+
+static bool
+ValidElfSectionHeader(const ElfExecutable::SectionHeader &header)
+{
+  if (!ValidElfSectionHeaderName(header.kName)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderType(header.kType)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderFlags(header.kFlags)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderAddress(header.kAddress)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderOffset(header.kOffset)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderSize(header.kSize)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderLink(header.kLink)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderInfo(header.kInfo)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderAddressAlignment(header.kAddressAlignment)) {
+    return false;
+  }
+
+  if (!ValidElfSectionHeaderEntrySize(header.kEntrySize)) {
+    return false;
+  }
+
+  return true;
+}
+
+#undef EXTRACT_ELF_FIELD
+
+static ElfExecutable::Header *ParseElfHeader(const uint8_t *const buf)
+{
+  return new ElfExecutable::Header {
+    ExtractElfHeaderClass(buf),
+    ExtractElfHeaderData(buf),
+    ExtractElfHeaderShortVersion(buf),
+    ExtractElfHeaderOsAbi(buf),
+    ExtractElfHeaderAbiVersion(buf),
+    ExtractElfHeaderType(buf),
+    ExtractElfHeaderMachine(buf),
+    ExtractElfHeaderLongVersion(buf),
+    ExtractElfHeaderEntryPoint(buf),
+    ExtractElfHeaderProgramHeaderOffset(buf),
+    ExtractElfHeaderSectionHeaderOffset(buf),
+    ExtractElfHeaderFlags(buf),
+    ExtractElfHeaderHeaderSize(buf),
+    ExtractElfHeaderProgramHeaderSize(buf),
+    ExtractElfHeaderProgramHeaderCount(buf),
+    ExtractElfHeaderSectionHeaderSize(buf),
+    ExtractElfHeaderSectionHeaderCount(buf),
+    ExtractElfHeaderSectionHeaderNamesIndex(buf),
+  };
+}
+
 static std::vector<ElfExecutable::ProgramHeader>
-ParseElfProgramHeaders(const File &file,
+ParseElfProgramHeaders(const uint8_t *const buf,
                        const ElfExecutable::Header *const header)
 {
-  return std::vector<ElfExecutable::ProgramHeader>();
+  const uint64_t kOffset = header->kProgramHeaderOffset;
+  const uint64_t kSize = header->kProgramHeaderSize;
+  uint64_t count = header->kProgramHeaderCount;
+  if (!kOffset || !count) {
+    return std::vector<ElfExecutable::ProgramHeader>();
+  }
+  std::vector<ElfExecutable::ProgramHeader> program_headers;
+
+  const uint8_t *program_header = buf + kOffset;
+
+  if (count == PN_XNUM) {
+    count = ExtractElfSectionHeaderInfo(program_header, header);
+  }
+
+  for (unsigned i = 0; i < count; i++) {
+    program_headers.push_back(std::move(ElfExecutable::ProgramHeader{
+      ExtractElfProgramHeaderType(program_header + i*kSize, header),
+      ExtractElfProgramHeaderFlags(program_header + i*kSize, header),
+      ExtractElfProgramHeaderOffset(program_header + i*kSize, header),
+      ExtractElfProgramHeaderVirtualAddress(program_header + i*kSize, header),
+      ExtractElfProgramHeaderPhysicalAddress(program_header + i*kSize, header),
+      ExtractElfProgramHeaderFileSize(program_header + i*kSize, header),
+      ExtractElfProgramHeaderMemorySize(program_header + i*kSize, header),
+      ExtractElfProgramHeaderAlign(program_header + i*kSize, header)
+    }));
+  }
+
+  return program_headers;
 }
 
 static std::vector<ElfExecutable::SectionHeader>
-ParseElfSectionHeaders(const File &file,
+ParseElfSectionHeaders(const uint8_t *const buf,
                        const ElfExecutable::Header *const header)
 {
-  return std::vector<ElfExecutable::SectionHeader>();
+  const uint64_t kOffset = header->kSectionHeaderOffset;
+  const uint64_t kSize = header->kSectionHeaderSize;
+  uint64_t count = header->kSectionHeaderCount;
+  if (!kOffset || !count) {
+    return std::vector<ElfExecutable::SectionHeader>();
+  }
+  std::vector<ElfExecutable::SectionHeader> section_headers;
+
+  const uint8_t *section_header = buf + kOffset;
+
+  if (count == SHN_LORESERVE) {
+    count = ExtractElfSectionHeaderSize(section_header, header);
+  }
+
+  for (unsigned i = 0; i < count; i++) {
+    section_headers.push_back(std::move(ElfExecutable::SectionHeader{
+      ExtractElfSectionHeaderName(section_header + i*kSize, header),
+      ExtractElfSectionHeaderType(section_header + i*kSize, header),
+      ExtractElfSectionHeaderFlags(section_header + i*kSize, header),
+      ExtractElfSectionHeaderAddress(section_header + i*kSize, header),
+      ExtractElfSectionHeaderOffset(section_header + i*kSize, header),
+      ExtractElfSectionHeaderSize(section_header + i*kSize, header),
+      ExtractElfSectionHeaderLink(section_header + i*kSize, header),
+      ExtractElfSectionHeaderInfo(section_header + i*kSize, header),
+      ExtractElfSectionHeaderAddressAlignment(section_header + i*kSize, header),
+      ExtractElfSectionHeaderEntrySize(section_header + i*kSize, header),
+    }));
+  }
+
+  return section_headers;
 }
 
 } // namespace
 
 ElfExecutable *ElfExecutable::parse(const File &file)
 {
-  printf("Starting to parse %s\n", file.filename());
+  const uint8_t *const buf = file.buffer();
 
-  std::unique_ptr<Header> header(ParseElfHeader(file));
+  std::unique_ptr<Header> header(ParseElfHeader(buf));
   if (!ValidElfHeader(header.get())) {
     return nullptr;
   }
 
   std::vector<ProgramHeader> program_headers
-      = ParseElfProgramHeaders(file, header.get());
-  std::vector<SectionHeader> section_headers
-      = ParseElfSectionHeaders(file, header.get());
+      = ParseElfProgramHeaders(buf, header.get());
 
-  if (!header || !program_headers.size() || !section_headers.size()) {
-    return nullptr;
+  for (const ProgramHeader &program_header : program_headers) {
+    if (!ValidElfProgramHeader(program_header)) {
+      return nullptr;
+    }
+  }
+
+  std::vector<SectionHeader> section_headers
+      = ParseElfSectionHeaders(buf, header.get());
+
+  for (const SectionHeader &section_header : section_headers) {
+    if (!ValidElfSectionHeader(section_header)) {
+      return nullptr;
+    }
   }
 
   return new ElfExecutable(file, header.get(),
