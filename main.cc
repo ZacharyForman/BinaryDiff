@@ -8,7 +8,7 @@
 
 int main(int argc, const char **argv)
 {
-  const char *const kBinaryName = argv[0];
+  const char *const kBinaryName = argc > 1 ? argv[1] : argv[0];
 
   File file(kBinaryName);
 
