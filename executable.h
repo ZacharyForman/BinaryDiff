@@ -8,6 +8,7 @@ public:
   enum class Type;
 
   static Type GetExecutableType(const File &f);
+  static Executable *ReadFromFile(const char *const f);
 
   const char *const filename() const;
   virtual Type GetType() const;

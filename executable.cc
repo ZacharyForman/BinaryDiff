@@ -1,3 +1,4 @@
+#include "elf_executable.h"
 #include "executable.h"
 #include "file.h"
 
@@ -41,4 +42,24 @@ Executable::Type Executable::GetExecutableType(const File &file)
     return Executable::Type::kMach;
   }
   return Executable::Type::kUnknown;
+}
+
+Executable *Executable::ReadFromFile(const char *const kBinaryName)
+{
+  File file(kBinaryName);
+
+  Executable::Type type = GetExecutableType(file);
+
+  switch (type) {
+    case Executable::Type::kElf: {
+      return ElfExecutable::parse(file);
+    }
+    case Executable::Type::kPexe: // FALLTHROUGH
+    case Executable::Type::kMach: // FALLTHROUGH
+    case Executable::Type::kUnknown: {
+      fprintf(stderr, "Currently only handles ELF format files.\n");
+      exit(1);
+    }
+  }
+  return nullptr;
 }
