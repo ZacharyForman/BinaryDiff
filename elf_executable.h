@@ -14,6 +14,8 @@ public:
   struct Header;
   struct ProgramHeader;
   struct SectionHeader;
+  struct Symbol;
+  class SymbolTable;
 
   Executable::Type GetType() const;
   const Header *const header() const;
@@ -24,10 +26,12 @@ public:
 private:
   ElfExecutable(const File *file, Header *header,
                 std::vector<ProgramHeader> &&program_headers,
-                std::vector<SectionHeader> &&section_headers);
+                std::vector<SectionHeader> &&section_headers,
+                SymbolTable *symbol_table);
   std::unique_ptr<Header> header_;
   std::vector<ProgramHeader> program_headers_;
   std::vector<SectionHeader> section_headers_;
+  std::unique_ptr<SymbolTable> symbol_table_;
 };
 
 #endif // BINARY_MATCHER_ELF_EXECUTABLE_H

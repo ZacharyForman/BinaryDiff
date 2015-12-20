@@ -2,6 +2,7 @@
 #include "elf_executable_header.h"
 #include "elf_executable_program_header.h"
 #include "elf_executable_section_header.h"
+#include "elf_executable_symbol_table.h"
 #include "file.h"
 
 #include <stdio.h>
@@ -35,19 +36,29 @@ ElfExecutable *ElfExecutable::parse(const File *file)
     }
   }
 
+  std::unique_ptr<SymbolTable>
+      symbol_table(SymbolTable::Parse(buf, header.get(), section_headers));
+
+  if (!symbol_table) {
+    return nullptr;
+  }
+
   return new ElfExecutable(file, header.release(),
                            std::move(program_headers),
-                           std::move(section_headers));
+                           std::move(section_headers),
+                           symbol_table.release());
 }
 
 ElfExecutable::ElfExecutable(const File *file,
                              Header *header,
                              std::vector<ProgramHeader> &&program_headers,
-                             std::vector<SectionHeader> &&section_headers)
+                             std::vector<SectionHeader> &&section_headers,
+                             SymbolTable *symbol_table)
   : Executable(file),
     header_(header),
     program_headers_(program_headers),
-    section_headers_(section_headers) { }
+    section_headers_(section_headers),
+    symbol_table_(symbol_table) { }
 
 Executable::Type ElfExecutable::GetType() const
 {
