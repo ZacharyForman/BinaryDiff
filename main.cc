@@ -15,5 +15,7 @@ int main(int argc, const char **argv)
     fprintf(stderr, "Could not parse %s successfully\n", kBinaryName);
   }
 
+  printf("%s", executable->ToString().c_str());
+
   return 0;
 }

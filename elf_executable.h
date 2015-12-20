@@ -5,19 +5,24 @@
 
 #include <memory>
 #include <stdint.h>
+#include <string>
 #include <vector>
 
 class ElfExecutable : public Executable {
 public:
-  static ElfExecutable *parse(const File &file);
+  static ElfExecutable *parse(const File *file);
   struct Header;
   struct ProgramHeader;
   struct SectionHeader;
 
   Executable::Type GetType() const;
-  const Header *const header();
+  const Header *const header() const;
+  const std::vector<ProgramHeader> &program_headers() const;
+  const std::vector<SectionHeader> &section_headers() const;
+
+  std::string ToString() const;
 private:
-  ElfExecutable(const File &file, Header *header,
+  ElfExecutable(const File *file, Header *header,
                 std::vector<ProgramHeader> &&program_headers,
                 std::vector<SectionHeader> &&section_headers);
   std::unique_ptr<Header> header_;

@@ -4,6 +4,7 @@
 #include "elf_executable.h"
 #include "elf_executable_header.h"
 #include <stdint.h>
+#include <string>
 #include <vector>
 
 struct ElfExecutable::ProgramHeader {
@@ -15,6 +16,8 @@ struct ElfExecutable::ProgramHeader {
   const uint64_t kFileSize;
   const uint64_t kMemorySize;
   const uint64_t kAlign;
+
+  std::string ToString() const;
 };
 
 bool ValidElfProgramHeader(const ElfExecutable::ProgramHeader &program_header);

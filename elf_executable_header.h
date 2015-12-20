@@ -3,6 +3,7 @@
 
 #include "elf_executable.h"
 #include <stdint.h>
+#include <string>
 
 struct ElfExecutable::Header {
   const uint8_t kClass;
@@ -23,6 +24,8 @@ struct ElfExecutable::Header {
   const uint16_t kSectionHeaderSize;
   const uint16_t kSectionHeaderCount;
   const uint16_t kSectionHeaderNamesIndex;
+
+  std::string ToString() const;
 };
 
 bool ValidElfHeader(const ElfExecutable::Header *const head);

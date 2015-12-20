@@ -2,6 +2,8 @@
 #include "elf_executable_header.h"
 
 #include <elf.h>
+#include <iomanip>
+#include <sstream>
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -376,6 +378,78 @@ ValidElfHeaderSectionHeaderNamesIndex(const uint16_t kSectionHeaderNamesIndex)
   return true;
 }
 
+static const char *const ElfHeaderClassString(const uint8_t kClass)
+{
+  switch (kClass) {
+    case ELFCLASS32: return "ELF32";
+    case ELFCLASS64: return "ELF64";
+  }
+  return "UNKNOWN";
+}
+
+static const char *const ElfHeaderDataString(const uint8_t kData)
+{
+  switch (kData) {
+    case ELFDATA2LSB: return "2's complement, little endian";
+    case ELFDATA2MSB: return "2's complement, big endian";
+  }
+  return "UNKNOWN";
+}
+
+static const char *const ElfHeaderOsAbiString(const uint8_t kOsAbi)
+{
+  switch (kOsAbi) {
+    case ELFOSABI_SYSV: return "UNIX System V ABI";
+    case ELFOSABI_HPUX: return "HP-UX ABI";
+    case ELFOSABI_NETBSD: return "NetBSD ABI";
+    case ELFOSABI_LINUX: return "Linux ABI";
+    case ELFOSABI_SOLARIS: return "Solaris ABI";
+    case ELFOSABI_IRIX: return "IRIX ABI";
+    case ELFOSABI_FREEBSD: return "FreeBSD ABI";
+    case ELFOSABI_TRU64: return "TRU64 Unix ABI";
+    case ELFOSABI_ARM: return "ARM architecture ABI";
+    case ELFOSABI_STANDALONE: return "Stand-alone (embedded) ABI";
+  }
+  return "UNKNOWN";
+}
+
+static const char *const ElfHeaderTypeString(const uint16_t kType)
+{
+  switch (kType) {
+    case ET_REL: return "Relocatable";
+    case ET_EXEC: return "Executable";
+    case ET_DYN: return "Shared Object";
+    case ET_CORE: return "Core dump";
+  }
+  return "UNKNOWN";
+}
+
+static const char *const ElfHeaderMachineString(const uint16_t kMachine)
+{
+  switch (kMachine) {
+    case EM_M32: return "AT&T WE 32100";
+    case EM_SPARC: return "Sun Microsystems SPARC";
+    case EM_386: return "Intel 80386";
+    case EM_68K: return "Motorola 68000";
+    case EM_88K: return "Motorola 88000";
+    case EM_860: return "Intel 80860";
+    case EM_MIPS: return "MIPS RS3000 (big-endian only)";
+    case EM_PARISC: return "HP/PA";
+    case EM_SPARC32PLUS: return "SPARC with enhanced instruction set";
+    case EM_PPC: return "PowerPC";
+    case EM_PPC64: return "PowerPC 64-bit";
+    case EM_S390: return "IBM S/390";
+    case EM_ARM: return "Advanced RISC Machines";
+    case EM_SH: return "Renesas SuperH";
+    case EM_SPARCV9: return "SPARC v9 64-bit";
+    case EM_IA_64: return "Intel Itanium";
+    case EM_X86_64: return "AMD x86-64";
+    case EM_VAX: return "DEC Vax";
+  }
+  return "UNKNOWN";
+}
+
+
 } // namespace
 
 #undef EXTRACT_ELF_FIELD
@@ -482,4 +556,33 @@ ElfExecutable::Header *ParseElfHeader(const uint8_t *const buf)
     ExtractElfHeaderSectionHeaderCount(buf),
     ExtractElfHeaderSectionHeaderNamesIndex(buf),
   };
+}
+
+std::string ElfExecutable::Header::ToString() const
+{
+  std::stringstream res;
+  res << "ELF Header:";
+  res << "\n  Class:                   " << ElfHeaderClassString(kClass);
+  res << "\n  Data:                    " << ElfHeaderDataString(kData);
+  res << "\n  ShortVersion:            " << (uint16_t)kShortVersion;
+  res << "\n  OsAbi:                   " << ElfHeaderOsAbiString(kOsAbi);
+  res << "\n  AbiVersion:              " << (uint16_t)kAbiVersion;
+  res << "\n  Type:                    " << ElfHeaderTypeString(kType);
+  res << "\n  Machine:                 " << ElfHeaderMachineString(kMachine);
+  res << std::hex;
+  res << "\n  LongVersion:             " << "0x" << kLongVersion;
+  res << "\n  EntryPoint:              " << "0x" << kEntryPoint;
+  res << std::dec;
+  res << "\n  ProgramHeaderOffset:     " << kProgramHeaderOffset;
+  res << "\n  SectionHeaderOffset:     " << kSectionHeaderOffset;
+  res << std::hex;
+  res << "\n  Flags:                   " << "0x" << kFlags;
+  res << std::dec;
+  res << "\n  HeaderSize:              " << kHeaderSize;
+  res << "\n  ProgramHeaderSize:       " << kProgramHeaderSize;
+  res << "\n  ProgramHeaderCount:      " << kProgramHeaderCount;
+  res << "\n  SectionHeaderSize:       " << kSectionHeaderSize;
+  res << "\n  SectionHeaderCount:      " << kSectionHeaderCount;
+  res << "\n  SectionHeaderNamesIndex: " << kSectionHeaderNamesIndex;
+  return res.str();
 }

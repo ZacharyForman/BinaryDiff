@@ -3,6 +3,9 @@
 #include "elf_executable_program_header.h"
 
 #include <elf.h>
+#include <iomanip>
+#include <stdint.h>
+#include <sstream>
 #include <vector>
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
@@ -179,6 +182,40 @@ ExtractElfSectionHeaderInfo(const uint8_t *const buf,
   }
 }
 
+static const char *const ElfProgramHeaderTypeString(const uint32_t kType)
+{
+  switch (kType) {
+    case PT_NULL: return "NULL";
+    case PT_LOAD: return "LOAD";
+    case PT_DYNAMIC: return "DYNAMIC";
+    case PT_INTERP: return "INTERP";
+    case PT_NOTE: return "NOTE";
+    case PT_SHLIB: return "SHLIB";
+    case PT_PHDR: return "PHDR";
+    case PT_LOPROC: return "LOPROC";
+    case PT_HIPROC: return "HIPROC";
+    case PT_GNU_STACK: return "GNU_STACK";
+    case PT_GNU_EH_FRAME: return "GNU_EH_FRAME";
+    case PT_GNU_RELRO: return "GNU_RELRO";
+    case PT_TLS: return "TLS";
+  }
+  return "UNKNOWN";
+}
+
+static const char *const ElfProgramHeaderFlagsString(const uint32_t kFlags)
+{
+  switch (kFlags) {
+    case PF_X: return "  X";
+    case PF_W: return " W ";
+    case PF_R: return "R  ";
+    case PF_X | PF_W: return " WX";
+    case PF_X | PF_R: return "R X";
+    case PF_W | PF_R: return "RW ";
+    case PF_X | PF_W | PF_R: return "RWX";
+  }
+  return "   ";
+}
+
 } // namespace
 
 #undef EXTRACT_ELF_FIELD
@@ -252,4 +289,22 @@ ParseElfProgramHeaders(const uint8_t *const buf,
   }
 
   return program_headers;
+}
+
+std::string ElfExecutable::ProgramHeader::ToString() const
+{
+  std::stringstream res;
+  res << "\nType:            " << ElfProgramHeaderTypeString(kType);
+  res << "\nFlags:           " << ElfProgramHeaderFlagsString(kFlags);
+  res << std::hex;
+  res << "\nOffset:          " << "0x" << kOffset;
+  res << "\nVirtualAddress:  " << "0x" << kVirtualAddress;
+  res << "\nPhysicalAddress: " << "0x" << kPhysicalAddress;
+  res << std::dec;
+  res << "\nFileSize:        " << kFileSize;
+  res << "\nMemorySize:      " << kMemorySize;
+  res << std::hex;
+  res << "\nAlign:           " << "0x" << kAlign;
+  res << std::dec;
+  return res.str();
 }

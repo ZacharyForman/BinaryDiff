@@ -5,11 +5,12 @@
 #include "file.h"
 
 #include <stdio.h>
+#include <sstream>
 #include <elf.h>
 
-ElfExecutable *ElfExecutable::parse(const File &file)
+ElfExecutable *ElfExecutable::parse(const File *file)
 {
-  const uint8_t *const buf = file.buffer();
+  const uint8_t *const buf = file->buffer();
 
   std::unique_ptr<Header> header(ParseElfHeader(buf));
   if (!ValidElfHeader(header.get())) {
@@ -34,12 +35,12 @@ ElfExecutable *ElfExecutable::parse(const File &file)
     }
   }
 
-  return new ElfExecutable(file, header.get(),
+  return new ElfExecutable(file, header.release(),
                            std::move(program_headers),
                            std::move(section_headers));
 }
 
-ElfExecutable::ElfExecutable(const File &file,
+ElfExecutable::ElfExecutable(const File *file,
                              Header *header,
                              std::vector<ProgramHeader> &&program_headers,
                              std::vector<SectionHeader> &&section_headers)
@@ -53,7 +54,35 @@ Executable::Type ElfExecutable::GetType() const
   return Executable::Type::kElf;
 }
 
-const ElfExecutable::Header *const ElfExecutable::header()
+const ElfExecutable::Header *const ElfExecutable::header() const
 {
   return header_.get();
+}
+
+const std::vector<ElfExecutable::ProgramHeader>
+&ElfExecutable::program_headers() const
+{
+  return program_headers_;
+}
+
+const std::vector<ElfExecutable::SectionHeader>
+&ElfExecutable::section_headers() const
+{
+  return section_headers_;
+}
+
+std::string ElfExecutable::ToString() const
+{
+  std::stringstream res;
+  res << filename() << ":\n";
+  res << header_->ToString() << '\n';
+  res << "There are " << program_headers_.size()
+      << " program headers.\n";
+  for (unsigned i = 0; i < program_headers_.size(); i++) {
+    res << program_headers_[i].ToString() << '\n';
+  }
+  for (unsigned i = 0; i < section_headers_.size(); i++) {
+    res << section_headers_[i].ToString() << '\n';
+  }
+  return res.str();
 }

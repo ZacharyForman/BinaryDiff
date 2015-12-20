@@ -3,6 +3,7 @@
 #include "elf_executable_section_header.h"
 
 #include <elf.h>
+#include <sstream>
 #include <vector>
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
@@ -280,4 +281,11 @@ ParseElfSectionHeaders(const uint8_t *const buf,
   }
 
   return section_headers;
+}
+
+std::string ElfExecutable::SectionHeader::ToString() const
+{
+  std::stringstream res;
+
+  return res.str();
 }

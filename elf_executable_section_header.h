@@ -4,6 +4,7 @@
 #include "elf_executable.h"
 #include "elf_executable_header.h"
 #include <stdint.h>
+#include <string>
 
 struct ElfExecutable::SectionHeader {
   const uint32_t kName;
@@ -16,6 +17,8 @@ struct ElfExecutable::SectionHeader {
   const uint32_t kInfo;
   const uint64_t kAddressAlignment;
   const uint64_t kEntrySize;
+
+  std::string ToString() const;
 };
 
 bool ValidElfSectionHeader(const ElfExecutable::SectionHeader &header);
