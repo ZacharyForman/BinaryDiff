@@ -325,7 +325,7 @@ ParseElfSectionHeaders(const uint8_t *const buf,
 
     section_headers.push_back(std::move(ElfExecutable::SectionHeader{
       kName,
-      section_header_names_table+kName,
+      reinterpret_cast<const char *const>(section_header_names_table+kName),
       ExtractElfSectionHeaderType(section_header + i*kSize, header),
       ExtractElfSectionHeaderFlags(section_header + i*kSize, header),
       ExtractElfSectionHeaderAddress(section_header + i*kSize, header),

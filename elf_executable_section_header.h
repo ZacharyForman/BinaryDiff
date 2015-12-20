@@ -9,7 +9,7 @@
 struct ElfExecutable::SectionHeader {
 public:
   const uint32_t kName;
-  const uint8_t *const kStringName;
+  const char *const kStringName;
   const uint32_t kType;
   const uint64_t kFlags;
   const uint64_t kAddress;

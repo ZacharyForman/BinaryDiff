@@ -8,7 +8,7 @@
 
 struct ElfExecutable::Symbol {
   const uint32_t kName;
-  const uint8_t *const kStringName;
+  const char *const kStringName;
   const uint64_t kValue;
   const uint64_t kSize;
   const uint8_t kInfo;
