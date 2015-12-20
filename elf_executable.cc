@@ -76,12 +76,12 @@ std::string ElfExecutable::ToString() const
   std::stringstream res;
   res << filename() << ":\n";
   res << header_->ToString() << '\n';
-  res << "There are " << program_headers_.size()
-      << " program headers.\n";
   for (unsigned i = 0; i < program_headers_.size(); i++) {
+    res << "\nProgram Header " << i << ": ";
     res << program_headers_[i].ToString() << '\n';
   }
   for (unsigned i = 0; i < section_headers_.size(); i++) {
+    res << "\nSection Header " << i << ": ";
     res << section_headers_[i].ToString() << '\n';
   }
   return res.str();

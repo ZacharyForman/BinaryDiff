@@ -3,6 +3,7 @@
 #include "elf_executable_section_header.h"
 
 #include <elf.h>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 
@@ -198,6 +199,50 @@ ValidElfSectionHeaderEntrySize(const uint64_t kEntrySize)
   return true;
 }
 
+static const char *const ElfSectionHeaderTypeString(const uint32_t kType)
+{
+  switch (kType) {
+    case SHT_NULL: return "NULL";
+    case SHT_PROGBITS: return "PROGBITS";
+    case SHT_SYMTAB: return "SYMTAB";
+    case SHT_STRTAB: return "STRTAB";
+    case SHT_RELA: return "RELA";
+    case SHT_HASH: return "HASH";
+    case SHT_DYNAMIC: return "DYNAMIC";
+    case SHT_NOTE: return "NOTE";
+    case SHT_NOBITS: return "NOBITS";
+    case SHT_REL: return "REL";
+    case SHT_SHLIB: return "SHLIB";
+    case SHT_DYNSYM: return "DYNSYM";
+    case SHT_LOPROC: return "LOPROC";
+    case SHT_HIPROC: return "HIPROC";
+    case SHT_LOUSER: return "LOUSER";
+    case SHT_HIUSER: return "HIUSER";
+    case SHT_GNU_verdef: return "GNU_verdef";
+    case SHT_GNU_verneed: return "GNU_verneed";
+    case SHT_GNU_versym: return "GNU_versym";
+    case SHT_GNU_HASH: return "GNU_HASH";
+    case SHT_INIT_ARRAY: return "INIT_ARRAY";
+    case SHT_FINI_ARRAY: return "FINI_ARRAY";
+  }
+  return "UNKNOWN";
+}
+
+static const char *const ElfSectionHeaderFlagsString(const uint32_t kFlags)
+{
+  switch (kFlags & (SHF_WRITE|SHF_ALLOC|SHF_EXECINSTR)) {
+    case SHF_WRITE: return "W  ";
+    case SHF_ALLOC: return " A ";
+    case SHF_EXECINSTR: return "  X";
+    case SHF_WRITE | SHF_ALLOC: return "WA ";
+    case SHF_WRITE | SHF_EXECINSTR: return "W  X;";
+    case SHF_ALLOC | SHF_EXECINSTR: return " AX";
+    case SHF_WRITE | SHF_ALLOC | SHF_EXECINSTR: return "WAX";
+    case 0: return "   ";
+  }
+  return "???";
+}
+
 } // namespace
 
 #undef EXTRACT_ELF_FIELD
@@ -265,9 +310,22 @@ ParseElfSectionHeaders(const uint8_t *const buf,
     count = ExtractElfSectionHeaderSize(section_header, header);
   }
 
+  const uint8_t *const section_header_names_section
+      = section_header + kSize * header->kSectionHeaderNamesIndex;
+
+  const uint64_t section_header_names_table_offset
+      = ExtractElfSectionHeaderOffset(section_header_names_section, header);
+
+  const uint8_t *const section_header_names_table
+      = buf + section_header_names_table_offset;
+
   for (unsigned i = 0; i < count; i++) {
+    const uint32_t kName
+        = ExtractElfSectionHeaderName(section_header + i*kSize, header);
+
     section_headers.push_back(std::move(ElfExecutable::SectionHeader{
-      ExtractElfSectionHeaderName(section_header + i*kSize, header),
+      kName,
+      section_header_names_table+kName,
       ExtractElfSectionHeaderType(section_header + i*kSize, header),
       ExtractElfSectionHeaderFlags(section_header + i*kSize, header),
       ExtractElfSectionHeaderAddress(section_header + i*kSize, header),
@@ -286,6 +344,17 @@ ParseElfSectionHeaders(const uint8_t *const buf,
 std::string ElfExecutable::SectionHeader::ToString() const
 {
   std::stringstream res;
-
+  res << "\n  Name:             " << kStringName;
+  res << "\n  Type:             " << ElfSectionHeaderTypeString(kType);
+  res << "\n  Flags:            " << ElfSectionHeaderFlagsString(kFlags);
+  res << std::hex;
+  res << "\n  Address:          " << "0x" << kAddress;
+  res << "\n  Offset:           " << "0x" << kOffset;
+  res << "\n  Size:             " << "0x" << kSize;
+  res << "\n  Link:             " << "0x" << kLink;
+  res << "\n  Info:             " << "0x" << kInfo;
+  res << "\n  AddressAlignment: " << "0x" << kAddressAlignment;
+  res << "\n  EntrySize:        " << "0x" << kEntrySize;
+  res << std::dec;
   return res.str();
 }

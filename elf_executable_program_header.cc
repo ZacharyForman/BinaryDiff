@@ -294,17 +294,17 @@ ParseElfProgramHeaders(const uint8_t *const buf,
 std::string ElfExecutable::ProgramHeader::ToString() const
 {
   std::stringstream res;
-  res << "\nType:            " << ElfProgramHeaderTypeString(kType);
-  res << "\nFlags:           " << ElfProgramHeaderFlagsString(kFlags);
+  res << "\n  Type:            " << ElfProgramHeaderTypeString(kType);
+  res << "\n  Flags:           " << ElfProgramHeaderFlagsString(kFlags);
   res << std::hex;
-  res << "\nOffset:          " << "0x" << kOffset;
-  res << "\nVirtualAddress:  " << "0x" << kVirtualAddress;
-  res << "\nPhysicalAddress: " << "0x" << kPhysicalAddress;
+  res << "\n  Offset:          " << "0x" << kOffset;
+  res << "\n  VirtualAddress:  " << "0x" << kVirtualAddress;
+  res << "\n  PhysicalAddress: " << "0x" << kPhysicalAddress;
   res << std::dec;
-  res << "\nFileSize:        " << kFileSize;
-  res << "\nMemorySize:      " << kMemorySize;
+  res << "\n  FileSize:        " << kFileSize;
+  res << "\n  MemorySize:      " << kMemorySize;
   res << std::hex;
-  res << "\nAlign:           " << "0x" << kAlign;
+  res << "\n  Align:           " << "0x" << kAlign;
   res << std::dec;
   return res.str();
 }
