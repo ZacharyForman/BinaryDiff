@@ -77,6 +77,11 @@ ExtractElfSymbolSectionHeaderIndex(const uint8_t *const buf,
 
 #undef EXTRACT_ELF_FIELD
 
+const char *const ElfExecutable::SymbolTable::get_type() const
+{
+  return kType_;
+}
+
 const ElfExecutable::Symbol *const
 ElfExecutable::SymbolTable::GetSymbolByAddress(const uint32_t address) const
 {
@@ -100,7 +105,9 @@ ElfExecutable::SymbolTable::GetSymbolByName(const char *const name) const
 std::string ElfExecutable::SymbolTable::ToString() const
 {
   std::stringstream res;
-
+  for (unsigned i = 0; i < kSymbols_.size(); i++) {
+    res << "[" << i << "]" << " " << kSymbols_[i].ToString() << "\n";
+  }
   return res.str();
 }
 
@@ -134,26 +141,17 @@ ElfExecutable::SymbolTable ElfExecutable::SymbolTable::Parse(
   const uint64_t kEntrySize = symbol_table_header->kEntrySize;
   const uint64_t kEntries = kSize/ kEntrySize;
 
-  const uint8_t *const symbol_table_base = buf + symbol_table_header->kOffset;
+  const uint8_t *const symbol_table = buf + symbol_table_header->kOffset;
 
   for (unsigned i = 0; i < kEntries; i++) {
-    const uint16_t kSectionHeaderIndex
-        = ExtractElfSymbolSectionHeaderIndex(symbol_table_base + i*kEntrySize,
-                                             header);
-    const uint32_t kName
-        = ExtractElfSymbolName(symbol_table_base + i*kEntrySize, header);
-
-    const uint8_t *const string_table_base
-        = buf + section_headers[kSectionHeaderIndex].kOffset;
-
     symbols.push_back(Symbol{
-      kName,
-      reinterpret_cast<const char *const>(string_table_base+kName),
-      ExtractElfSymbolValue(symbol_table_base + i*kEntrySize, header),
-      ExtractElfSymbolSize(symbol_table_base + i*kEntrySize, header),
-      ExtractElfSymbolInfo(symbol_table_base + i*kEntrySize, header),
-      ExtractElfSymbolOther(symbol_table_base + i*kEntrySize, header),
-      kSectionHeaderIndex,
+      ExtractElfSymbolName(symbol_table + i*kEntrySize, header),
+      "UNKNOWN",
+      ExtractElfSymbolValue(symbol_table + i*kEntrySize, header),
+      ExtractElfSymbolSize(symbol_table + i*kEntrySize, header),
+      ExtractElfSymbolInfo(symbol_table + i*kEntrySize, header),
+      ExtractElfSymbolOther(symbol_table + i*kEntrySize, header),
+      ExtractElfSymbolSectionHeaderIndex(symbol_table + i*kEntrySize, header)
     });
   }
 

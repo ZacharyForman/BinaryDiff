@@ -19,7 +19,7 @@ public:
       const ElfExecutable::Header *const header,
       const std::vector<ElfExecutable::SectionHeader> &section_headers);
 
-  const char *const get_type();
+  const char *const get_type() const;
 
   const ElfExecutable::Symbol *const
       GetSymbolByAddress(const uint32_t address) const;

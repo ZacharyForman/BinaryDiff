@@ -93,5 +93,9 @@ std::string ElfExecutable::ToString() const
     res << "\nSection Header " << i << ": ";
     res << section_headers_[i].ToString() << '\n';
   }
+  for (unsigned i = 0; i < symbol_tables_.size(); i++) {
+    res << "\nSymbol table " << symbol_tables_[i].get_type() << ":";
+    res << symbol_tables_[i].ToString() << '\n';
+  }
   return res.str();
 }
