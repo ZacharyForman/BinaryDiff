@@ -36,29 +36,27 @@ ElfExecutable *ElfExecutable::parse(const File *file)
     }
   }
 
-  std::unique_ptr<SymbolTable>
-      symbol_table(SymbolTable::Parse(buf, header.get(), section_headers));
-
-  if (!symbol_table) {
-    return nullptr;
-  }
+  std::vector<SymbolTable> symbol_tables = {
+    SymbolTable::Parse(".dynsym", buf, header.get(), section_headers),
+    SymbolTable::Parse(".symtab", buf, header.get(), section_headers),
+  };
 
   return new ElfExecutable(file, header.release(),
                            std::move(program_headers),
                            std::move(section_headers),
-                           symbol_table.release());
+                           std::move(symbol_tables));
 }
 
 ElfExecutable::ElfExecutable(const File *file,
                              Header *header,
                              std::vector<ProgramHeader> &&program_headers,
                              std::vector<SectionHeader> &&section_headers,
-                             SymbolTable *symbol_table)
+                             std::vector<SymbolTable> &&symbol_tables)
   : Executable(file),
     header_(header),
     program_headers_(program_headers),
     section_headers_(section_headers),
-    symbol_table_(symbol_table) { }
+    symbol_tables_(symbol_tables) { }
 
 Executable::Type ElfExecutable::GetType() const
 {

@@ -27,11 +27,11 @@ private:
   ElfExecutable(const File *file, Header *header,
                 std::vector<ProgramHeader> &&program_headers,
                 std::vector<SectionHeader> &&section_headers,
-                SymbolTable *symbol_table);
+                std::vector<SymbolTable> &&symbol_tables);
   std::unique_ptr<Header> header_;
   std::vector<ProgramHeader> program_headers_;
   std::vector<SectionHeader> section_headers_;
-  std::unique_ptr<SymbolTable> symbol_table_;
+  std::vector<SymbolTable> symbol_tables_;
 };
 
 #endif // BINARY_MATCHER_ELF_EXECUTABLE_H

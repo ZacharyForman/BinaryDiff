@@ -13,9 +13,13 @@
 
 class ElfExecutable::SymbolTable {
 public:
-  static SymbolTable *Parse(const uint8_t *const buf,
+  static SymbolTable Parse(
+      const char *const type,
+      const uint8_t *const buf,
       const ElfExecutable::Header *const header,
       const std::vector<ElfExecutable::SectionHeader> &section_headers);
+
+  const char *const get_type();
 
   const ElfExecutable::Symbol *const
       GetSymbolByAddress(const uint32_t address) const;
@@ -23,10 +27,12 @@ public:
       GetSymbolByName(const char *const name) const;
   std::string ToString() const;
 private:
-  SymbolTable(std::vector<ElfExecutable::Symbol> &&symbols,
+  SymbolTable(const char *const type,
+      std::vector<ElfExecutable::Symbol> &&symbols,
       std::unordered_map<uint64_t, Symbol*> &&address_to_symbol,
       std::unordered_map<std::string, Symbol*> &&name_to_symbol);
 
+  const char *const kType_;
   const std::vector<ElfExecutable::Symbol> kSymbols_;
   const std::unordered_map<uint64_t, Symbol*> kAddressToSymbol_;
   const std::unordered_map<std::string, Symbol*> kNameToSymbol_;
