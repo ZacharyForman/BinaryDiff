@@ -9,7 +9,7 @@
 #include <sstream>
 #include <elf.h>
 
-ElfExecutable *ElfExecutable::parse(const File *file)
+ElfExecutable *ElfExecutable::ParseFile(const File *file)
 {
   const uint8_t *const buf = file->buffer();
 

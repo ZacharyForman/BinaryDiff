@@ -449,7 +449,6 @@ static const char *const ElfHeaderMachineString(const uint16_t kMachine)
   return "UNKNOWN";
 }
 
-
 } // namespace
 
 #undef EXTRACT_ELF_FIELD

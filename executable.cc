@@ -45,15 +45,15 @@ Executable::Type Executable::GetExecutableType(const File *file)
   return Executable::Type::kUnknown;
 }
 
-Executable *Executable::ReadFromFile(const char *const kBinaryName)
+Executable *Executable::ReadFromFile(const char *const binary_name)
 {
-  File *file = new File(kBinaryName);
+  File *file = new File(binary_name);
 
   Executable::Type type = GetExecutableType(file);
 
   switch (type) {
     case Executable::Type::kElf: {
-      return ElfExecutable::parse(file);
+      return ElfExecutable::ParseFile(file);
     }
     case Executable::Type::kPexe: // FALLTHROUGH
     case Executable::Type::kMach: // FALLTHROUGH

@@ -72,21 +72,20 @@ ExtractElfSymbolSectionHeaderIndex(const uint8_t *const buf,
   }
 }
 
-
 } // namespace
 
 #undef EXTRACT_ELF_FIELD
 
 const char *const ElfExecutable::SymbolTable::get_type() const
 {
-  return kType_;
+  return type_;
 }
 
 const ElfExecutable::Symbol *const
 ElfExecutable::SymbolTable::GetSymbolByAddress(const uint32_t address) const
 {
-  auto it = kAddressToSymbol_.find(address);
-  if (it == kAddressToSymbol_.end()) {
+  auto it = address_to_symbol_.find(address);
+  if (it == address_to_symbol_.end()) {
     return nullptr;
   }
   return it->second;
@@ -95,8 +94,8 @@ ElfExecutable::SymbolTable::GetSymbolByAddress(const uint32_t address) const
 const ElfExecutable::Symbol *const
 ElfExecutable::SymbolTable::GetSymbolByName(const char *const name) const
 {
-  auto it = kNameToSymbol_.find(name);
-  if (it == kNameToSymbol_.end()) {
+  auto it = name_to_symbol_.find(name);
+  if (it == name_to_symbol_.end()) {
     return nullptr;
   }
   return it->second;
@@ -105,8 +104,8 @@ ElfExecutable::SymbolTable::GetSymbolByName(const char *const name) const
 std::string ElfExecutable::SymbolTable::ToString() const
 {
   std::stringstream res;
-  for (unsigned i = 0; i < kSymbols_.size(); i++) {
-    res << "[" << i << "]" << " " << kSymbols_[i].ToString() << "\n";
+  for (unsigned i = 0; i < symbols_.size(); i++) {
+    res << "[" << i << "]" << " " << symbols_[i].ToString() << "\n";
   }
   return res.str();
 }
@@ -116,10 +115,10 @@ ElfExecutable::SymbolTable::SymbolTable(
     std::vector<ElfExecutable::Symbol> &&symbols,
     std::unordered_map<uint64_t, ElfExecutable::Symbol*> &&address_to_symbol,
     std::unordered_map<std::string, ElfExecutable::Symbol*> &&name_to_symbol)
-    : kType_(type),
-      kSymbols_(symbols),
-      kAddressToSymbol_(address_to_symbol),
-      kNameToSymbol_(name_to_symbol) { }
+    : type_(type),
+      symbols_(symbols),
+      address_to_symbol_(address_to_symbol),
+      name_to_symbol_(name_to_symbol) { }
 
 ElfExecutable::SymbolTable ElfExecutable::SymbolTable::Parse(
     const char *const table_type,
@@ -139,19 +138,32 @@ ElfExecutable::SymbolTable ElfExecutable::SymbolTable::Parse(
 
   const uint64_t kSize = symbol_table_header->kSize ;
   const uint64_t kEntrySize = symbol_table_header->kEntrySize;
-  const uint64_t kEntries = kSize/ kEntrySize;
-
-  const uint8_t *const symbol_table = buf + symbol_table_header->kOffset;
+  const uint64_t kEntries = kSize / kEntrySize;
 
   for (unsigned i = 0; i < kEntries; i++) {
+    const uint8_t *const symbol_table_entry
+        = buf + symbol_table_header->kOffset + i*kEntrySize;
+    const uint32_t kSymbolName
+        = ExtractElfSymbolName(symbol_table_entry, header);
+    const uint64_t kSymbolValue
+        = ExtractElfSymbolValue(symbol_table_entry, header);
+    const uint64_t kSymbolSize
+        = ExtractElfSymbolSize(symbol_table_entry, header);
+    const uint8_t kSymbolInfo
+        = ExtractElfSymbolInfo(symbol_table_entry, header);
+    const uint8_t kSymbolOther
+        = ExtractElfSymbolOther(symbol_table_entry, header);
+    const uint16_t kSymbolSectionHeaderIndex
+        = ExtractElfSymbolSectionHeaderIndex(symbol_table_entry, header);
+
     symbols.push_back(Symbol{
-      ExtractElfSymbolName(symbol_table + i*kEntrySize, header),
+      kSymbolName,
       "UNKNOWN",
-      ExtractElfSymbolValue(symbol_table + i*kEntrySize, header),
-      ExtractElfSymbolSize(symbol_table + i*kEntrySize, header),
-      ExtractElfSymbolInfo(symbol_table + i*kEntrySize, header),
-      ExtractElfSymbolOther(symbol_table + i*kEntrySize, header),
-      ExtractElfSymbolSectionHeaderIndex(symbol_table + i*kEntrySize, header)
+      kSymbolValue,
+      kSymbolSize,
+      kSymbolInfo,
+      kSymbolOther,
+      kSymbolSectionHeaderIndex,
     });
   }
 
@@ -159,7 +171,6 @@ ElfExecutable::SymbolTable ElfExecutable::SymbolTable::Parse(
   std::unordered_map<std::string, ElfExecutable::Symbol*> name_to_symbol;
 
   for (ElfExecutable::Symbol &symbol : symbols) {
-    // printf("Symbol: %s <=> %lu\n", symbol.kStringName, symbol.kValue);
     address_to_symbol[symbol.kValue] = &symbol;
     name_to_symbol[std::string(symbol.kStringName)] = &symbol;
   }

@@ -10,7 +10,7 @@
 
 class ElfExecutable : public Executable {
 public:
-  static ElfExecutable *parse(const File *file);
+  static ElfExecutable *ParseFile(const File *file);
   struct Header;
   struct ProgramHeader;
   struct SectionHeader;

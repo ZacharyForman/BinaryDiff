@@ -32,10 +32,10 @@ private:
       std::unordered_map<uint64_t, Symbol*> &&address_to_symbol,
       std::unordered_map<std::string, Symbol*> &&name_to_symbol);
 
-  const char *const kType_;
-  const std::vector<ElfExecutable::Symbol> kSymbols_;
-  const std::unordered_map<uint64_t, Symbol*> kAddressToSymbol_;
-  const std::unordered_map<std::string, Symbol*> kNameToSymbol_;
+  const char *const type_;
+  const std::vector<ElfExecutable::Symbol> symbols_;
+  const std::unordered_map<uint64_t, Symbol*> address_to_symbol_;
+  const std::unordered_map<std::string, Symbol*> name_to_symbol_;
 };
 
 #endif // BINARY_MATCHER_ELF_EXECUTABLE_SYMBOL_TABLE_H
