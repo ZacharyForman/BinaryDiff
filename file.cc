@@ -22,7 +22,7 @@ File::File(const char *const filename)
     exit(1);
   }
   size_ = buf.st_size;
-  buf_ = static_cast<uint8_t*>(mmap(NULL, size_, PROT_READ, MAP_SHARED, fd_, 0));
+  buf_ = (uint8_t*)(mmap(nullptr, size_, PROT_READ, MAP_SHARED, fd_, 0));
   if (buf_ == MAP_FAILED) {
     perror("mmap");
     exit(1);

@@ -1,12 +1,13 @@
-#include "elf_executable.h"
-#include "elf_executable_header.h"
-#include "elf_executable_program_header.h"
-#include "elf_executable_section_header.h"
-#include "elf_executable_symbol_table.h"
+#include "elf/elf_executable.h"
+#include "elf/elf_executable_header.h"
+#include "elf/elf_executable_program_header.h"
+#include "elf/elf_executable_section_header.h"
+#include "elf/elf_executable_symbol_table.h"
 #include "file.h"
 
-#include <stdio.h>
 #include <sstream>
+#include <stdio.h>
+#include <string.h>
 #include <elf.h>
 
 ElfExecutable *ElfExecutable::ParseFile(const File *file)
@@ -63,7 +64,7 @@ Executable::Type ElfExecutable::GetType() const
   return Executable::Type::kElf;
 }
 
-const ElfExecutable::Header *const ElfExecutable::header() const
+const ElfExecutable::Header *ElfExecutable::header() const
 {
   return header_.get();
 }
@@ -94,6 +95,9 @@ std::string ElfExecutable::ToString() const
         << section_headers_[i].ToString() << '\n';
   }
   for (unsigned i = 0; i < symbol_tables_.size(); i++) {
+    if (!strcmp(symbol_tables_[i].get_type(), "N/A")) {
+      continue;
+    }
     res << "\nSymbol table " << symbol_tables_[i].get_type() << ":"
         << symbol_tables_[i].ToString() << '\n';
   }

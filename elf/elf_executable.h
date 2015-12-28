@@ -10,15 +10,16 @@
 
 class ElfExecutable : public Executable {
 public:
-  static ElfExecutable *ParseFile(const File *file);
   struct Header;
   struct ProgramHeader;
   struct SectionHeader;
   struct Symbol;
   class SymbolTable;
 
+  static ElfExecutable *ParseFile(const File *file);
+
   Executable::Type GetType() const;
-  const Header *const header() const;
+  const Header *header() const;
   const std::vector<ProgramHeader> &program_headers() const;
   const std::vector<SectionHeader> &section_headers() const;
 

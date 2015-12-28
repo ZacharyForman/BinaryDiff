@@ -1,9 +1,14 @@
-#include "elf_executable_symbol_table.h"
+#include "elf/elf_executable_symbol_table.h"
 
 #include <elf.h>
 #include <sstream>
 #include <string>
 #include <string.h>
+
+using Header = ElfExecutable::Header;
+using SectionHeader = ElfExecutable::SectionHeader;
+using Symbol = ElfExecutable::Symbol;
+using SymbolTable = ElfExecutable::SymbolTable;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -12,77 +17,77 @@ namespace {
 
 static uint32_t
 ExtractElfSymbolName(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
 static uint64_t
 ExtractElfSymbolValue(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 4);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 8);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 4);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 8);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfSymbolSize(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 8);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 16);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 8);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 16);
   }
+  return -1;
 }
 
 static uint8_t
 ExtractElfSymbolInfo(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(8, 12);
-  } else {
-    return EXTRACT_ELF_FIELD(8, 4);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(8, 12);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(8, 4);
   }
+  return -1;
 }
 
 static uint8_t
 ExtractElfSymbolOther(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(8, 13);
-  } else {
-    return EXTRACT_ELF_FIELD(8, 5);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(8, 13);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(8, 5);
   }
+  return -1;
 }
 
 static uint16_t
 ExtractElfSymbolSectionHeaderIndex(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(16, 14);
-  } else {
-    return EXTRACT_ELF_FIELD(16, 6);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, 14);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, 6);
   }
+  return -1;
 }
 
 } // namespace
 
 #undef EXTRACT_ELF_FIELD
 
-const char *const ElfExecutable::SymbolTable::get_type() const
+const char *const SymbolTable::get_type() const
 {
   return type_;
 }
 
-const ElfExecutable::Symbol *const
-ElfExecutable::SymbolTable::GetSymbolByAddress(const uint32_t address) const
+const Symbol *const
+SymbolTable::GetSymbolByAddress(const uint32_t address) const
 {
   auto it = address_to_symbol_.find(address);
   if (it == address_to_symbol_.end()) {
@@ -91,8 +96,8 @@ ElfExecutable::SymbolTable::GetSymbolByAddress(const uint32_t address) const
   return it->second;
 }
 
-const ElfExecutable::Symbol *const
-ElfExecutable::SymbolTable::GetSymbolByName(const char *const name) const
+const Symbol *const
+SymbolTable::GetSymbolByName(const char *const name) const
 {
   auto it = name_to_symbol_.find(name);
   if (it == name_to_symbol_.end()) {
@@ -101,7 +106,7 @@ ElfExecutable::SymbolTable::GetSymbolByName(const char *const name) const
   return it->second;
 }
 
-std::string ElfExecutable::SymbolTable::ToString() const
+std::string SymbolTable::ToString() const
 {
   std::stringstream res;
   for (unsigned i = 0; i < symbols_.size(); i++) {
@@ -110,36 +115,43 @@ std::string ElfExecutable::SymbolTable::ToString() const
   return res.str();
 }
 
-ElfExecutable::SymbolTable::SymbolTable(
+SymbolTable::SymbolTable(
     const char *const type,
-    std::vector<ElfExecutable::Symbol> &&symbols,
-    std::unordered_map<uint64_t, ElfExecutable::Symbol*> &&address_to_symbol,
-    std::unordered_map<std::string, ElfExecutable::Symbol*> &&name_to_symbol)
+    std::vector<Symbol> &&symbols,
+    std::unordered_map<uint64_t, Symbol*> &&address_to_symbol,
+    std::unordered_map<std::string, Symbol*> &&name_to_symbol)
     : type_(type),
       symbols_(symbols),
       address_to_symbol_(address_to_symbol),
       name_to_symbol_(name_to_symbol) { }
 
-ElfExecutable::SymbolTable ElfExecutable::SymbolTable::Parse(
+SymbolTable SymbolTable::Parse(
     const char *const table_type,
     const uint8_t *const buf,
-    const ElfExecutable::Header *const header,
-    const std::vector<ElfExecutable::SectionHeader> &section_headers)
+    const Header *const header,
+    const std::vector<SectionHeader> &section_headers)
 {
   std::string strtab_name(table_type);
   strtab_name.replace(strtab_name.find("sym"), 3, "str");
-  std::vector<ElfExecutable::Symbol> symbols;
+  std::vector<Symbol> symbols;
 
-  const ElfExecutable::SectionHeader *symbol_table_header;
-  const ElfExecutable::SectionHeader *string_table_header;
+  const SectionHeader *symbol_table_header = nullptr;
+  const SectionHeader *string_table_header = nullptr;
 
-  for (const ElfExecutable::SectionHeader &section_header : section_headers) {
+  for (const SectionHeader &section_header : section_headers) {
     if (!strcmp(table_type, section_header.kStringName)) {
       symbol_table_header = &section_header;
     }
     if (!strcmp(strtab_name.c_str(), section_header.kStringName)) {
       string_table_header = &section_header;
     }
+  }
+
+  if (!symbol_table_header || !string_table_header) {
+    return SymbolTable("N/A",
+                       std::vector<Symbol>(),
+                       std::unordered_map<uint64_t, Symbol*>(),
+                       std::unordered_map<std::string, Symbol*>());
   }
 
   const uint64_t kSize = symbol_table_header->kSize ;
@@ -165,10 +177,10 @@ ElfExecutable::SymbolTable ElfExecutable::SymbolTable::Parse(
     });
   }
 
-  std::unordered_map<uint64_t, ElfExecutable::Symbol*> address_to_symbol;
-  std::unordered_map<std::string, ElfExecutable::Symbol*> name_to_symbol;
+  std::unordered_map<uint64_t, Symbol*> address_to_symbol;
+  std::unordered_map<std::string, Symbol*> name_to_symbol;
 
-  for (ElfExecutable::Symbol &symbol : symbols) {
+  for (Symbol &symbol : symbols) {
     address_to_symbol[symbol.kValue] = &symbol;
     name_to_symbol[std::string(symbol.kStringName)] = &symbol;
   }

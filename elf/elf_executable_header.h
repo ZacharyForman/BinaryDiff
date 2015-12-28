@@ -1,7 +1,7 @@
 #ifndef BINARY_MATCHER_ELF_EXECUTABLE_HEADER_H
 #define BINARY_MATCHER_ELF_EXECUTABLE_HEADER_H
 
-#include "elf_executable.h"
+#include "elf/elf_executable.h"
 #include <stdint.h>
 #include <string>
 

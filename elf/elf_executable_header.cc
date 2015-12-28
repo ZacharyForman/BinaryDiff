@@ -1,9 +1,11 @@
-#include "elf_executable.h"
-#include "elf_executable_header.h"
+#include "elf/elf_executable.h"
+#include "elf/elf_executable_header.h"
 
 #include <elf.h>
 #include <iomanip>
 #include <sstream>
+
+using Header = ElfExecutable::Header;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -62,12 +64,8 @@ static uint64_t
 ExtractElfHeaderEntryPoint(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(32, EI_NIDENT+8);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(64, EI_NIDENT+8);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+8);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, EI_NIDENT+8);
   }
   return -1;
 }
@@ -76,12 +74,8 @@ static uint64_t
 ExtractElfHeaderProgramHeaderOffset(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(32, EI_NIDENT+12);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(64, EI_NIDENT+16);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+12);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, EI_NIDENT+16);
   }
   return -1;
 }
@@ -90,12 +84,8 @@ static uint64_t
 ExtractElfHeaderSectionHeaderOffset(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(32, EI_NIDENT+16);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(64, EI_NIDENT+24);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+16);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, EI_NIDENT+24);
   }
   return -1;
 }
@@ -104,12 +94,8 @@ static uint32_t
 ExtractElfHeaderFlags(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(32, EI_NIDENT+20);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(32, EI_NIDENT+32);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+20);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(32, EI_NIDENT+32);
   }
   return -1;
 }
@@ -118,12 +104,8 @@ static uint16_t
 ExtractElfHeaderHeaderSize(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+24);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+36);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+24);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+36);
   }
   return -1;
 }
@@ -132,12 +114,8 @@ static uint16_t
 ExtractElfHeaderProgramHeaderSize(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+26);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+38);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+26);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+38);
   }
   return -1;
 }
@@ -146,12 +124,8 @@ static uint16_t
 ExtractElfHeaderProgramHeaderCount(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+28);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+40);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+28);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+40);
   }
   return -1;
 }
@@ -160,12 +134,8 @@ static uint16_t
 ExtractElfHeaderSectionHeaderSize(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+30);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+42);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+30);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+42);
   }
   return -1;
 }
@@ -174,12 +144,8 @@ static uint16_t
 ExtractElfHeaderSectionHeaderCount(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+32);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+44);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+32);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+44);
   }
   return -1;
 }
@@ -188,12 +154,8 @@ static uint16_t
 ExtractElfHeaderSectionHeaderNamesIndex(const uint8_t *const buf)
 {
   switch (ExtractElfHeaderClass(buf)) {
-    case ELFCLASS32: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+34);
-    }
-    case ELFCLASS64: {
-      return EXTRACT_ELF_FIELD(16, EI_NIDENT+46);
-    }
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+34);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+46);
   }
   return -1;
 }
@@ -453,7 +415,7 @@ static const char *const ElfHeaderMachineString(const uint16_t kMachine)
 
 #undef EXTRACT_ELF_FIELD
 
-bool ValidElfHeader(const ElfExecutable::Header *const head)
+bool ValidElfHeader(const Header *const head)
 {
   if (!head) {
     return false;
@@ -533,9 +495,9 @@ bool ValidElfHeader(const ElfExecutable::Header *const head)
   return true;
 }
 
-ElfExecutable::Header *ParseElfHeader(const uint8_t *const buf)
+Header *ParseElfHeader(const uint8_t *const buf)
 {
-  return new ElfExecutable::Header {
+  return new Header {
     ExtractElfHeaderClass(buf),
     ExtractElfHeaderData(buf),
     ExtractElfHeaderShortVersion(buf),
@@ -557,7 +519,7 @@ ElfExecutable::Header *ParseElfHeader(const uint8_t *const buf)
   };
 }
 
-std::string ElfExecutable::Header::ToString() const
+std::string Header::ToString() const
 {
   std::stringstream res;
   res << "ELF Header:"

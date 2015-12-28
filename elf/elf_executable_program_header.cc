@@ -1,12 +1,15 @@
-#include "elf_executable.h"
-#include "elf_executable_header.h"
-#include "elf_executable_program_header.h"
+#include "elf/elf_executable.h"
+#include "elf/elf_executable_header.h"
+#include "elf/elf_executable_program_header.h"
 
 #include <elf.h>
 #include <iomanip>
 #include <stdint.h>
 #include <sstream>
 #include <vector>
+
+using Header = ElfExecutable::Header;
+using ProgramHeader = ElfExecutable::ProgramHeader;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -15,86 +18,86 @@ namespace {
 
 static uint32_t
 ExtractElfProgramHeaderType(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
 static uint32_t
 ExtractElfProgramHeaderFlags(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 24);
-  } else {
-    return EXTRACT_ELF_FIELD(32, 4);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 24);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 4);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfProgramHeaderOffset(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 4);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 8);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 4);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 8);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfProgramHeaderVirtualAddress(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 8);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 16);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 8);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 16);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfProgramHeaderPhysicalAddress(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 12);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 24);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 12);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 24);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfProgramHeaderFileSize(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 16);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 32);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 16);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 32);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfProgramHeaderMemorySize(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 20);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 40);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 20);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 40);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfProgramHeaderAlign(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 28);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 48);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 28);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 48);
   }
+  return -1;
 }
 
 static bool
@@ -173,13 +176,13 @@ ValidElfProgramHeaderAlign(const uint64_t kAlign)
 
 static uint32_t
 ExtractElfSectionHeaderInfo(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 28);
-  } else {
-    return EXTRACT_ELF_FIELD(32, 44);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 28);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 44);
   }
+  return -1;
 }
 
 static const char *const ElfProgramHeaderTypeString(const uint32_t kType)
@@ -220,7 +223,7 @@ static const char *const ElfProgramHeaderFlagsString(const uint32_t kFlags)
 
 #undef EXTRACT_ELF_FIELD
 
-bool ValidElfProgramHeader(const ElfExecutable::ProgramHeader &program_header)
+bool ValidElfProgramHeader(const ProgramHeader &program_header)
 {
   if (!ValidElfProgramHeaderType(program_header.kType)) {
     return false;
@@ -257,17 +260,16 @@ bool ValidElfProgramHeader(const ElfExecutable::ProgramHeader &program_header)
   return true;
 }
 
-std::vector<ElfExecutable::ProgramHeader>
-ParseElfProgramHeaders(const uint8_t *const buf,
-                       const ElfExecutable::Header *const header)
+std::vector<ProgramHeader> ParseElfProgramHeaders(const uint8_t *const buf,
+                                                  const Header *const header)
 {
   const uint64_t kOffset = header->kProgramHeaderOffset;
   const uint64_t kSize = header->kProgramHeaderSize;
   uint64_t count = header->kProgramHeaderCount;
   if (!kOffset || !count) {
-    return std::vector<ElfExecutable::ProgramHeader>();
+    return std::vector<ProgramHeader>();
   }
-  std::vector<ElfExecutable::ProgramHeader> program_headers;
+  std::vector<ProgramHeader> program_headers;
 
   const uint8_t *program_header = buf + kOffset;
 
@@ -276,7 +278,7 @@ ParseElfProgramHeaders(const uint8_t *const buf,
   }
 
   for (unsigned i = 0; i < count; i++) {
-    program_headers.push_back(std::move(ElfExecutable::ProgramHeader{
+    program_headers.push_back(std::move(ProgramHeader{
       ExtractElfProgramHeaderType(program_header + i*kSize, header),
       ExtractElfProgramHeaderFlags(program_header + i*kSize, header),
       ExtractElfProgramHeaderOffset(program_header + i*kSize, header),
@@ -291,7 +293,7 @@ ParseElfProgramHeaders(const uint8_t *const buf,
   return program_headers;
 }
 
-std::string ElfExecutable::ProgramHeader::ToString() const
+std::string ProgramHeader::ToString() const
 {
   std::stringstream res;
   res << "\n  Type:            " << ElfProgramHeaderTypeString(kType)

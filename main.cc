@@ -9,7 +9,8 @@ int main(int argc, const char **argv)
 {
   const char *const kBinaryName = argc > 1 ? argv[1] : argv[0];
 
-  std::unique_ptr<Executable> executable(Executable::ReadFromFile(kBinaryName));
+  std::unique_ptr<Executable>
+      executable(Executable::ReadFromFile(kBinaryName));
 
   if (!executable) {
     fprintf(stderr, "Could not parse %s successfully\n", kBinaryName);

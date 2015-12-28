@@ -1,11 +1,14 @@
-#include "elf_executable.h"
-#include "elf_executable_header.h"
-#include "elf_executable_section_header.h"
+#include "elf/elf_executable.h"
+#include "elf/elf_executable_header.h"
+#include "elf/elf_executable_section_header.h"
 
 #include <elf.h>
 #include <iomanip>
 #include <sstream>
 #include <vector>
+
+using Header = ElfExecutable::Header;
+using SectionHeader = ElfExecutable::SectionHeader;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -14,104 +17,104 @@ namespace {
 
 static uint32_t
 ExtractElfSectionHeaderName(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
 static uint32_t
 ExtractElfSectionHeaderType(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
   return EXTRACT_ELF_FIELD(32, 4);
 }
 
 static uint64_t
 ExtractElfSectionHeaderFlags(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 8);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 8);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 8);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 8);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfSectionHeaderAddress(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 12);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 16);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 12);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 16);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfSectionHeaderOffset(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 16);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 24);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 16);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 24);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfSectionHeaderSize(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 20);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 32);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 20);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 32);
   }
+  return -1;
 }
 
 static uint32_t
 ExtractElfSectionHeaderLink(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 24);
-  } else {
-    return EXTRACT_ELF_FIELD(32, 40);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 24);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 40);
   }
+  return -1;
 }
 
 static uint32_t
 ExtractElfSectionHeaderInfo(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 28);
-  } else {
-    return EXTRACT_ELF_FIELD(32, 44);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 28);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 44);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfSectionHeaderAddressAlignment(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 32);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 48);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 32);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 48);
   }
+  return -1;
 }
 
 static uint64_t
 ExtractElfSectionHeaderEntrySize(const uint8_t *const buf,
-    const ElfExecutable::Header *const header)
+    const Header *const header)
 {
-  if (header->kClass == ELFCLASS32) {
-    return EXTRACT_ELF_FIELD(32, 36);
-  } else {
-    return EXTRACT_ELF_FIELD(64, 56);
+  switch (header->kClass) {
+    case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 36);
+    case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 56);
   }
+  return -1;
 }
 
 static bool
@@ -247,7 +250,7 @@ static const char *const ElfSectionHeaderFlagsString(const uint32_t kFlags)
 
 #undef EXTRACT_ELF_FIELD
 
-bool ValidElfSectionHeader(const ElfExecutable::SectionHeader &header)
+bool ValidElfSectionHeader(const SectionHeader &header)
 {
   if (!ValidElfSectionHeaderName(header.kName)) {
     return false;
@@ -292,26 +295,26 @@ bool ValidElfSectionHeader(const ElfExecutable::SectionHeader &header)
   return true;
 }
 
-std::vector<ElfExecutable::SectionHeader>
+std::vector<SectionHeader>
 ParseElfSectionHeaders(const uint8_t *const buf,
-                       const ElfExecutable::Header *const header)
+                       const Header *const header)
 {
   const uint64_t kOffset = header->kSectionHeaderOffset;
   const uint64_t kSize = header->kSectionHeaderSize;
   uint64_t count = header->kSectionHeaderCount;
   if (!kOffset || !count) {
-    return std::vector<ElfExecutable::SectionHeader>();
+    return std::vector<SectionHeader>();
   }
-  std::vector<ElfExecutable::SectionHeader> section_headers;
+  std::vector<SectionHeader> section_headers;
 
-  const uint8_t *section_header = buf + kOffset;
+  const uint8_t *section_header_base = buf + kOffset;
 
   if (count == SHN_LORESERVE) {
-    count = ExtractElfSectionHeaderSize(section_header, header);
+    count = ExtractElfSectionHeaderSize(section_header_base, header);
   }
 
   const uint8_t *const section_header_names_section
-      = section_header + kSize * header->kSectionHeaderNamesIndex;
+      = section_header_base + kSize * header->kSectionHeaderNamesIndex;
 
   const uint64_t section_header_names_table_offset
       = ExtractElfSectionHeaderOffset(section_header_names_section, header);
@@ -320,28 +323,29 @@ ParseElfSectionHeaders(const uint8_t *const buf,
       = buf + section_header_names_table_offset;
 
   for (unsigned i = 0; i < count; i++) {
+    const uint8_t *section_header = section_header_base + i*kSize;
     const uint32_t kName
-        = ExtractElfSectionHeaderName(section_header + i*kSize, header);
+        = ExtractElfSectionHeaderName(section_header, header);
 
-    section_headers.push_back(std::move(ElfExecutable::SectionHeader{
+    section_headers.push_back(std::move(SectionHeader{
       kName,
       reinterpret_cast<const char *const>(section_header_names_table+kName),
-      ExtractElfSectionHeaderType(section_header + i*kSize, header),
-      ExtractElfSectionHeaderFlags(section_header + i*kSize, header),
-      ExtractElfSectionHeaderAddress(section_header + i*kSize, header),
-      ExtractElfSectionHeaderOffset(section_header + i*kSize, header),
-      ExtractElfSectionHeaderSize(section_header + i*kSize, header),
-      ExtractElfSectionHeaderLink(section_header + i*kSize, header),
-      ExtractElfSectionHeaderInfo(section_header + i*kSize, header),
-      ExtractElfSectionHeaderAddressAlignment(section_header + i*kSize, header),
-      ExtractElfSectionHeaderEntrySize(section_header + i*kSize, header),
+      ExtractElfSectionHeaderType(section_header, header),
+      ExtractElfSectionHeaderFlags(section_header, header),
+      ExtractElfSectionHeaderAddress(section_header, header),
+      ExtractElfSectionHeaderOffset(section_header, header),
+      ExtractElfSectionHeaderSize(section_header, header),
+      ExtractElfSectionHeaderLink(section_header, header),
+      ExtractElfSectionHeaderInfo(section_header, header),
+      ExtractElfSectionHeaderAddressAlignment(section_header, header),
+      ExtractElfSectionHeaderEntrySize(section_header, header),
     }));
   }
 
   return section_headers;
 }
 
-std::string ElfExecutable::SectionHeader::ToString() const
+std::string SectionHeader::ToString() const
 {
   std::stringstream res;
   res << "\n  Name:             " << kStringName

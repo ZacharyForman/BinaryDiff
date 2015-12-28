@@ -1,10 +1,10 @@
 #ifndef BINARY_MATCHER_ELF_EXECUTABLE_SYMBOL_TABLE_H
 #define BINARY_MATCHER_ELF_EXECUTABLE_SYMBOL_TABLE_H
 
-#include "elf_executable.h"
-#include "elf_executable_header.h"
-#include "elf_executable_section_header.h"
-#include "elf_executable_symbol.h"
+#include "elf/elf_executable.h"
+#include "elf/elf_executable_header.h"
+#include "elf/elf_executable_section_header.h"
+#include "elf/elf_executable_symbol.h"
 
 #include <stdint.h>
 #include <string>
