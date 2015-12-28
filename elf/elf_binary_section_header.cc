@@ -11,20 +11,23 @@ using Header = ElfBinary::Header;
 using SectionHeader = ElfBinary::SectionHeader;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
-  *((uint##bits##_t*)(buf+(offset)))
+  *(reinterpret_cast<const uint##bits##_t*>(buf+(offset)))
 
 namespace {
 
+// Set of helper methods that extract fields from
+// the buffer.
+
 static uint32_t
 ExtractElfSectionHeaderName(const uint8_t *const buf,
-    const Header *const header)
+    const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
 static uint32_t
 ExtractElfSectionHeaderType(const uint8_t *const buf,
-    const Header *const header)
+    const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 4);
 }
@@ -36,8 +39,8 @@ ExtractElfSectionHeaderFlags(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 8);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 8);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -47,8 +50,8 @@ ExtractElfSectionHeaderAddress(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 12);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 16);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -58,8 +61,8 @@ ExtractElfSectionHeaderOffset(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 16);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 24);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -69,8 +72,8 @@ ExtractElfSectionHeaderSize(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 20);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 32);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint32_t
@@ -80,8 +83,8 @@ ExtractElfSectionHeaderLink(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 24);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 40);
+    default: return ~0U;
   }
-  return -1;
 }
 
 static uint32_t
@@ -91,8 +94,8 @@ ExtractElfSectionHeaderInfo(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 28);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 44);
+    default: return ~0U;
   }
-  return -1;
 }
 
 static uint64_t
@@ -102,8 +105,8 @@ ExtractElfSectionHeaderAddressAlignment(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 32);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 48);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -113,15 +116,11 @@ ExtractElfSectionHeaderEntrySize(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 36);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 56);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
-static bool
-ValidElfSectionHeaderName(const uint32_t kName)
-{
-  return true;
-}
+// Set of helper methods that validate individual fields.
 
 static bool
 ValidElfSectionHeaderType(const uint32_t kType)
@@ -149,58 +148,13 @@ ValidElfSectionHeaderType(const uint32_t kType)
     case SHT_GNU_HASH: return true;
     case SHT_INIT_ARRAY: return true;
     case SHT_FINI_ARRAY: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Section Header has invalid type\n");
   return false;
 }
 
-static bool
-ValidElfSectionHeaderFlags(const uint64_t kFlags)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderAddress(const uint64_t kAddress)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderOffset(const uint64_t kOffset)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderSize(const uint64_t kSize)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderLink(const uint32_t kLink)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderInfo(const uint32_t kInfo)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderAddressAlignment(const uint64_t kAddressAlignment)
-{
-  return true;
-}
-
-static bool
-ValidElfSectionHeaderEntrySize(const uint64_t kEntrySize)
-{
-  return true;
-}
+// Set of helper methods that convert enumerated values into strings.
 
 static const char *ElfSectionHeaderTypeString(const uint32_t kType)
 {
@@ -227,8 +181,8 @@ static const char *ElfSectionHeaderTypeString(const uint32_t kType)
     case SHT_GNU_HASH: return "GNU_HASH";
     case SHT_INIT_ARRAY: return "INIT_ARRAY";
     case SHT_FINI_ARRAY: return "FINI_ARRAY";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfSectionHeaderFlagsString(const uint32_t kFlags)
@@ -242,8 +196,8 @@ static const char *ElfSectionHeaderFlagsString(const uint32_t kFlags)
     case SHF_ALLOC | SHF_EXECINSTR: return " AX";
     case SHF_WRITE | SHF_ALLOC | SHF_EXECINSTR: return "WAX";
     case 0: return "   ";
+    default: return "???";
   }
-  return "???";
 }
 
 } // namespace
@@ -252,43 +206,7 @@ static const char *ElfSectionHeaderFlagsString(const uint32_t kFlags)
 
 bool ValidElfSectionHeader(const SectionHeader &header)
 {
-  if (!ValidElfSectionHeaderName(header.kName)) {
-    return false;
-  }
-
   if (!ValidElfSectionHeaderType(header.kType)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderFlags(header.kFlags)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderAddress(header.kAddress)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderOffset(header.kOffset)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderSize(header.kSize)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderLink(header.kLink)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderInfo(header.kInfo)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderAddressAlignment(header.kAddressAlignment)) {
-    return false;
-  }
-
-  if (!ValidElfSectionHeaderEntrySize(header.kEntrySize)) {
     return false;
   }
 
@@ -309,8 +227,10 @@ ParseElfSectionHeaders(const uint8_t *const buf,
 
   const uint8_t *section_header_base = buf + kOffset;
 
-  if (count == SHN_LORESERVE) {
-    count = ExtractElfSectionHeaderSize(section_header_base, header);
+  // If the count is 0, then extract the count from the initial
+  // section header.
+  if (count == 0) {
+    count = ExtractElfSectionHeaderLink(section_header_base, header);
   }
 
   const uint8_t *const section_header_names_section
@@ -329,7 +249,7 @@ ParseElfSectionHeaders(const uint8_t *const buf,
 
     section_headers.push_back(std::move(SectionHeader{
       kName,
-      reinterpret_cast<const char *const>(section_header_names_table+kName),
+      reinterpret_cast<const char*>(section_header_names_table+kName),
       ExtractElfSectionHeaderType(section_header, header),
       ExtractElfSectionHeaderFlags(section_header, header),
       ExtractElfSectionHeaderAddress(section_header, header),

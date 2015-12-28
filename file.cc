@@ -9,7 +9,10 @@
 #include <unistd.h>
 
 File::File(const char *const filename)
-  : filename_(filename)
+  : filename_(filename),
+    fd_(-1),
+    size_(0),
+    buf_(nullptr)
 {
   fd_ = open(filename, O_RDONLY);
   if (fd_ < 0) {
@@ -21,8 +24,10 @@ File::File(const char *const filename)
     perror("stat");
     exit(1);
   }
-  size_ = buf.st_size;
-  buf_ = (uint8_t*)(mmap(nullptr, size_, PROT_READ, MAP_SHARED, fd_, 0));
+  size_ = static_cast<size_t>(buf.st_size);
+  buf_ = static_cast<uint8_t*>(
+    mmap(nullptr, size_, PROT_READ, MAP_SHARED, fd_, 0)
+  );
   if (buf_ == MAP_FAILED) {
     perror("mmap");
     exit(1);

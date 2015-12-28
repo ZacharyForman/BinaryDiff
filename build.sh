@@ -37,11 +37,18 @@ for file in $srcs; do
   rules=$(printf '%s\n\n%s' "$rules" "$rule")
 done
 
+WARNINGS='-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy
+          -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op
+          -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept
+          -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow
+          -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel
+          -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused'
+
 # build the actual makefile
 echo 'CC=g++' > makefile
 echo >> makefile
-echo CFLAGS=-Wall -c -O2 -std=c++14 -I${src_dir} >> makefile
-echo LINKFLAGS=-Wall -std=c++14 >> makefile
+echo CFLAGS=$WARNINGS -c -O2 -std=c++14 -I${src_dir} >> makefile
+echo LINKFLAGS=-std=c++14 >> makefile
 echo >> makefile
 echo "OBJ=$objects" >> makefile
 echo "BIN=$binary" >> makefile

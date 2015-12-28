@@ -11,13 +11,16 @@ using Symbol = ElfBinary::Symbol;
 using SymbolTable = ElfBinary::SymbolTable;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
-  *((uint##bits##_t*)(buf+(offset)))
+  *(reinterpret_cast<const uint##bits##_t*>(buf+(offset)))
 
 namespace {
 
+// Set of helper methods that extract fields from
+// the buffer.
+
 static uint32_t
 ExtractElfSymbolName(const uint8_t *const buf,
-    const Header *const header)
+    const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
@@ -29,8 +32,8 @@ ExtractElfSymbolValue(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 4);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 8);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -40,8 +43,8 @@ ExtractElfSymbolSize(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 8);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 16);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint8_t
@@ -51,8 +54,8 @@ ExtractElfSymbolInfo(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(8, 12);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(8, 4);
+    default: return 0xFF;
   }
-  return -1;
 }
 
 static uint8_t
@@ -62,8 +65,8 @@ ExtractElfSymbolOther(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(8, 13);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(8, 5);
+    default: return 0xFF;
   }
-  return -1;
 }
 
 static uint16_t
@@ -73,8 +76,8 @@ ExtractElfSymbolSectionHeaderIndex(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, 14);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, 6);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 } // namespace
@@ -86,8 +89,7 @@ const char *SymbolTable::type() const
   return type_;
 }
 
-const Symbol *const
-SymbolTable::GetSymbolByAddress(const uint32_t address) const
+const Symbol *SymbolTable::GetSymbolByAddress(const uint32_t address) const
 {
   auto it = address_to_symbol_.find(address);
   if (it == address_to_symbol_.end()) {
@@ -96,8 +98,7 @@ SymbolTable::GetSymbolByAddress(const uint32_t address) const
   return it->second;
 }
 
-const Symbol *const
-SymbolTable::GetSymbolByName(const char *const name) const
+const Symbol *SymbolTable::GetSymbolByName(const char *const name) const
 {
   auto it = name_to_symbol_.find(name);
   if (it == name_to_symbol_.end()) {
@@ -138,6 +139,7 @@ SymbolTable SymbolTable::Parse(
   const SectionHeader *symbol_table_header = nullptr;
   const SectionHeader *string_table_header = nullptr;
 
+  // Extract the string and symbol table headers.
   for (const SectionHeader &section_header : section_headers) {
     if (!strcmp(table_type, section_header.kStringName)) {
       symbol_table_header = &section_header;
@@ -161,7 +163,7 @@ SymbolTable SymbolTable::Parse(
   const uint8_t *const symbol_table_base
         = buf + symbol_table_header->kOffset;
   const char *const string_table_base
-      = (const char* const)buf + string_table_header->kOffset;
+      = reinterpret_cast<const char*>(buf) + string_table_header->kOffset;
 
   for (unsigned i = 0; i < kEntries; i++) {
     const uint8_t *symbol_table_entry = symbol_table_base + i*kEntrySize;

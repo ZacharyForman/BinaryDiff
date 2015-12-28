@@ -48,7 +48,7 @@ struct ElfBinary::ProgramHeader {
   // The alignment requirements of the segment.
   const uint64_t kAlign;
 
-  // Constructs a string represetnation of the program header
+  // Constructs a string representation of the program header
   // that contains all of the information in the above fields.
   std::string ToString() const;
 };

@@ -12,7 +12,7 @@ using Header = ElfBinary::Header;
 using ProgramHeader = ElfBinary::ProgramHeader;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
-  *((uint##bits##_t*)(buf+(offset)))
+  *(reinterpret_cast<const uint##bits##_t*>(buf+(offset)))
 
 namespace {
 
@@ -21,7 +21,7 @@ namespace {
 
 static uint32_t
 ExtractElfProgramHeaderType(const uint8_t *const buf,
-    const Header *const header)
+    const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
@@ -33,8 +33,8 @@ ExtractElfProgramHeaderFlags(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 24);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 4);
+    default: return ~0U;
   }
-  return -1;
 }
 
 static uint64_t
@@ -44,8 +44,8 @@ ExtractElfProgramHeaderOffset(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 4);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 8);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -55,8 +55,8 @@ ExtractElfProgramHeaderVirtualAddress(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 8);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 16);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -66,8 +66,8 @@ ExtractElfProgramHeaderPhysicalAddress(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 12);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 24);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -77,8 +77,8 @@ ExtractElfProgramHeaderFileSize(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 16);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 32);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -88,8 +88,8 @@ ExtractElfProgramHeaderMemorySize(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 20);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 40);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -99,8 +99,8 @@ ExtractElfProgramHeaderAlign(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 28);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, 48);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 // Set of helper methods that validate individual fields.
@@ -122,6 +122,7 @@ ValidElfProgramHeaderType(const uint32_t kType)
     case PT_GNU_EH_FRAME: return true;
     case PT_GNU_RELRO: return true;
     case PT_TLS: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Program Header has invalid type\n");
   return false;
@@ -138,45 +139,10 @@ ValidElfProgramHeaderFlags(const uint32_t kFlags)
     case PF_X | PF_R: return true;
     case PF_W | PF_R: return true;
     case PF_X | PF_W | PF_R: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Program Header has invalid flags\n");
   return false;
-}
-
-static bool
-ValidElfProgramHeaderOffset(const uint64_t kOffset)
-{
-  return true;
-}
-
-static bool
-ValidElfProgramHeaderVirtualAddress(const uint64_t kVirtualAddress)
-{
-  return true;
-}
-
-static bool
-ValidElfProgramHeaderPhysicalAddress(const uint64_t kPhysicalAddress)
-{
-  return true;
-}
-
-static bool
-ValidElfProgramHeaderFileSize(const uint64_t kFileSize)
-{
-  return true;
-}
-
-static bool
-ValidElfProgramHeaderMemorySize(const uint64_t kMemorySize)
-{
-  return true;
-}
-
-static bool
-ValidElfProgramHeaderAlign(const uint64_t kAlign)
-{
-  return true;
 }
 
 static uint32_t
@@ -186,8 +152,8 @@ ExtractElfSectionHeaderInfo(const uint8_t *const buf,
   switch (header->kClass) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, 28);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(32, 44);
+    default: return ~0u;
   }
-  return -1;
 }
 
 // Set of helper methods that convert enumerated values into strings.
@@ -208,8 +174,8 @@ static const char *ElfProgramHeaderTypeString(const uint32_t kType)
     case PT_GNU_EH_FRAME: return "GNU_EH_FRAME";
     case PT_GNU_RELRO: return "GNU_RELRO";
     case PT_TLS: return "TLS";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfProgramHeaderFlagsString(const uint32_t kFlags)
@@ -222,8 +188,8 @@ static const char *ElfProgramHeaderFlagsString(const uint32_t kFlags)
     case PF_X | PF_R: return "R X";
     case PF_W | PF_R: return "RW ";
     case PF_X | PF_W | PF_R: return "RWX";
+    default: return "   ";
   }
-  return "   ";
 }
 
 } // namespace
@@ -237,30 +203,6 @@ bool ValidElfProgramHeader(const ProgramHeader &program_header)
   }
 
   if (!ValidElfProgramHeaderFlags(program_header.kFlags)) {
-    return false;
-  }
-
-  if (!ValidElfProgramHeaderOffset(program_header.kOffset)) {
-    return false;
-  }
-
-  if (!ValidElfProgramHeaderVirtualAddress(program_header.kVirtualAddress)) {
-    return false;
-  }
-
-  if (!ValidElfProgramHeaderPhysicalAddress(program_header.kPhysicalAddress)) {
-    return false;
-  }
-
-  if (!ValidElfProgramHeaderFileSize(program_header.kFileSize)) {
-    return false;
-  }
-
-  if (!ValidElfProgramHeaderMemorySize(program_header.kMemorySize)) {
-    return false;
-  }
-
-  if (!ValidElfProgramHeaderAlign(program_header.kAlign)) {
     return false;
   }
 
@@ -282,7 +224,9 @@ std::vector<ProgramHeader> ParseElfProgramHeaders(const uint8_t *const buf,
 
   // If count == PN_XNUM, we have to get the count from the section header.
   if (count == PN_XNUM) {
-    count = ExtractElfSectionHeaderInfo(program_header, header);
+    const uint8_t *const section_header_base
+        = buf + header->kSectionHeaderOffset;
+    count = ExtractElfSectionHeaderInfo(section_header_base, header);
   }
 
   for (unsigned i = 0; i < count; i++) {

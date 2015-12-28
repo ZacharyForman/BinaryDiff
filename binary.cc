@@ -61,7 +61,8 @@ Binary *Binary::ReadFromFile(const char *const binary_name)
     }
     case Binary::Type::kPexe: // FALLTHROUGH
     case Binary::Type::kMach: // FALLTHROUGH
-    case Binary::Type::kUnknown: {
+    case Binary::Type::kUnknown: // FALLTHROUGH
+    default: {
       fprintf(stderr, "Currently only handles ELF format files.\n");
       exit(1);
     }

@@ -15,6 +15,8 @@ struct ElfBinary::Symbol {
   const uint8_t kOther;
   const uint16_t kSectionHeaderIndex;
 
+  // Constructs a string representation of the symbol
+  // that contains all of the information in the above fields.
   std::string ToString() const;
 };
 

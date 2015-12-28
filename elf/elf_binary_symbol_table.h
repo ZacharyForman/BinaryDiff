@@ -21,10 +21,11 @@ public:
 
   const char *type() const;
 
-  const ElfBinary::Symbol *const
-      GetSymbolByAddress(const uint32_t address) const;
-  const ElfBinary::Symbol *const
-      GetSymbolByName(const char *const name) const;
+  const ElfBinary::Symbol *GetSymbolByAddress(const uint32_t address) const;
+  const ElfBinary::Symbol *GetSymbolByName(const char *const name) const;
+
+  // Constructs a string representation of the symbol table
+  // that contains each symbol in the table's string representation.
   std::string ToString() const;
 private:
   SymbolTable(const char *const type,

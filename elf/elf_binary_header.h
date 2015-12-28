@@ -101,7 +101,7 @@ struct ElfBinary::Header {
   // contains the names for the section headers.
   const uint16_t kSectionHeaderNamesIndex;
 
-  // Constructs a string represetnation of the header, that
+  // Constructs a string representation of the header, that
   // contains all of the information in the above fields.
   std::string ToString() const;
 };

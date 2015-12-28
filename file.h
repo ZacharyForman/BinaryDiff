@@ -28,19 +28,19 @@ public:
   const uint8_t *buffer() const { return buf_; }
 
   // Returns the total size of the File.
-  const size_t size() const { return size_; }
+  size_t size() const { return size_; }
 private:
-  // The file descriptor of the File.
-  int fd_;
-
   // The filename of the File.
   const char *const filename_;
 
-  // The underlying buffer that the File uses.
-  uint8_t *buf_;
+  // The file descriptor of the File.
+  int fd_;
 
   // The size of the File.
   size_t size_;
+
+  // The underlying buffer that the File uses.
+  uint8_t *buf_;
 };
 
 #endif // BINARY_MATCHER_FILE_H

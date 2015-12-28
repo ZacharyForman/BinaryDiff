@@ -8,7 +8,7 @@
 using Header = ElfBinary::Header;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
-  *((uint##bits##_t*)(buf+(offset)))
+  *(reinterpret_cast<const uint##bits##_t*>(buf+(offset)))
 
 namespace {
 
@@ -69,8 +69,8 @@ ExtractElfHeaderEntryPoint(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+8);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, EI_NIDENT+8);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -79,8 +79,8 @@ ExtractElfHeaderProgramHeaderOffset(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+12);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, EI_NIDENT+16);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint64_t
@@ -89,8 +89,8 @@ ExtractElfHeaderSectionHeaderOffset(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+16);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(64, EI_NIDENT+24);
+    default: return ~0ULL;
   }
-  return -1;
 }
 
 static uint32_t
@@ -99,8 +99,8 @@ ExtractElfHeaderFlags(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(32, EI_NIDENT+20);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(32, EI_NIDENT+32);
+    default: return ~0U;
   }
-  return -1;
 }
 
 static uint16_t
@@ -109,8 +109,8 @@ ExtractElfHeaderHeaderSize(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+24);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+36);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 static uint16_t
@@ -119,8 +119,8 @@ ExtractElfHeaderProgramHeaderSize(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+26);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+38);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 static uint16_t
@@ -129,8 +129,8 @@ ExtractElfHeaderProgramHeaderCount(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+28);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+40);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 static uint16_t
@@ -139,8 +139,8 @@ ExtractElfHeaderSectionHeaderSize(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+30);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+42);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 static uint16_t
@@ -149,8 +149,8 @@ ExtractElfHeaderSectionHeaderCount(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+32);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+44);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 static uint16_t
@@ -159,8 +159,8 @@ ExtractElfHeaderSectionHeaderNamesIndex(const uint8_t *const buf)
   switch (ExtractElfHeaderClass(buf)) {
     case ELFCLASS32: return EXTRACT_ELF_FIELD(16, EI_NIDENT+34);
     case ELFCLASS64: return EXTRACT_ELF_FIELD(16, EI_NIDENT+46);
+    default: return 0xFFFF;
   }
-  return -1;
 }
 
 // Set of helper methods that validate individual fields.
@@ -171,6 +171,7 @@ ValidElfHeaderClass(const uint8_t kClass)
   switch (kClass) {
     case ELFCLASS32: return true;
     case ELFCLASS64: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid class\n");
   return false;
@@ -182,6 +183,7 @@ ValidElfHeaderData(const uint8_t kData)
   switch (kData) {
     case ELFDATA2LSB: return true;
     case ELFDATA2MSB: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid data type\n");
   return false;
@@ -192,6 +194,7 @@ ValidElfHeaderShortVersion(const uint8_t kShortVersion)
 {
   switch (kShortVersion) {
     case EV_CURRENT: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid short version\n");
   return false;
@@ -211,6 +214,7 @@ ValidElfHeaderOsAbi(const uint8_t kOsAbi)
     case ELFOSABI_TRU64: return true;
     case ELFOSABI_ARM: return true;
     case ELFOSABI_STANDALONE: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid OS ABI\n");
   return false;
@@ -221,6 +225,7 @@ ValidElfHeaderAbiVersion(const uint8_t kAbiVersion)
 {
   switch (kAbiVersion) {
     case 0: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid ABI version\n");
   return false;
@@ -234,6 +239,7 @@ ValidElfHeaderType(const uint16_t kType)
     case ET_EXEC: return true;
     case ET_DYN: return true;
     case ET_CORE: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid type\n");
   return false;
@@ -261,6 +267,7 @@ ValidElfHeaderMachine(const uint16_t kMachine)
     case EM_IA_64: return true;
     case EM_X86_64: return true;
     case EM_VAX: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid machine type\n");
   return false;
@@ -271,27 +278,10 @@ ValidElfHeaderLongVersion(const uint32_t kLongVersion)
 {
   switch (kLongVersion) {
     case EV_CURRENT: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid long version\n");
   return false;
-}
-
-static bool
-ValidElfHeaderEntryPoint(const uint64_t kEntryPoint)
-{
-  return true;
-}
-
-static bool
-ValidElfHeaderProgramHeaderOffset(const uint64_t kProgramHeaderOffset)
-{
-  return true;
-}
-
-static bool
-ValidElfHeaderSectionHeaderOffset(const uint64_t kSectionHeaderOffset)
-{
-  return true;
 }
 
 static bool
@@ -299,6 +289,7 @@ ValidElfHeaderFlags(const uint32_t kFlags)
 {
   switch (kFlags) {
     case 0: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid flags\n");
   return false;
@@ -310,39 +301,10 @@ ValidElfHeaderHeaderSize(const uint16_t kHeaderSize)
   switch (kHeaderSize) {
     case EI_NIDENT + 36: return true;
     case EI_NIDENT + 48: return true;
+    default: break;
   }
   fprintf(stderr, "ELF Header has invalid header size\n");
   return false;
-}
-
-static bool
-ValidElfHeaderProgramHeaderSize(const uint16_t kProgramHeaderSize)
-{
-  return true;
-}
-
-static bool
-ValidElfHeaderProgramHeaderCount(const uint16_t kProgramHeaderCount)
-{
-  return true;
-}
-
-static bool
-ValidElfHeaderSectionHeaderSize(const uint16_t kSectionHeaderSize)
-{
-  return true;
-}
-
-static bool
-ValidElfHeaderSectionHeaderCount(const uint16_t kSectionHeaderCount)
-{
-  return true;
-}
-
-static bool
-ValidElfHeaderSectionHeaderNamesIndex(const uint16_t kSectionHeaderNamesIndex)
-{
-  return true;
 }
 
 // Set of helper methods that convert enumerated values into strings.
@@ -352,8 +314,8 @@ static const char *ElfHeaderClassString(const uint8_t kClass)
   switch (kClass) {
     case ELFCLASS32: return "ELF32";
     case ELFCLASS64: return "ELF64";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfHeaderDataString(const uint8_t kData)
@@ -361,8 +323,8 @@ static const char *ElfHeaderDataString(const uint8_t kData)
   switch (kData) {
     case ELFDATA2LSB: return "2's complement, little endian";
     case ELFDATA2MSB: return "2's complement, big endian";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfHeaderOsAbiString(const uint8_t kOsAbi)
@@ -378,8 +340,8 @@ static const char *ElfHeaderOsAbiString(const uint8_t kOsAbi)
     case ELFOSABI_TRU64: return "TRU64 Unix ABI";
     case ELFOSABI_ARM: return "ARM architecture ABI";
     case ELFOSABI_STANDALONE: return "Stand-alone (embedded) ABI";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfHeaderTypeString(const uint16_t kType)
@@ -389,8 +351,8 @@ static const char *ElfHeaderTypeString(const uint16_t kType)
     case ET_EXEC: return "Binary";
     case ET_DYN: return "Shared Object";
     case ET_CORE: return "Core dump";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfHeaderMachineString(const uint16_t kMachine)
@@ -414,8 +376,8 @@ static const char *ElfHeaderMachineString(const uint16_t kMachine)
     case EM_IA_64: return "Intel Itanium";
     case EM_X86_64: return "AMD x86-64";
     case EM_VAX: return "DEC Vax";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 } // namespace
@@ -460,18 +422,6 @@ bool ValidElfHeader(const Header *const head)
     return false;
   }
 
-  if (!ValidElfHeaderEntryPoint(head->kEntryPoint)) {
-    return false;
-  }
-
-  if (!ValidElfHeaderProgramHeaderOffset(head->kProgramHeaderOffset)) {
-    return false;
-  }
-
-  if (!ValidElfHeaderSectionHeaderOffset(head->kSectionHeaderOffset)) {
-    return false;
-  }
-
   if (!ValidElfHeaderFlags(head->kFlags)) {
     return false;
   }
@@ -480,25 +430,6 @@ bool ValidElfHeader(const Header *const head)
     return false;
   }
 
-  if (!ValidElfHeaderProgramHeaderSize(head->kProgramHeaderSize)) {
-    return false;
-  }
-
-  if (!ValidElfHeaderProgramHeaderCount(head->kProgramHeaderCount)) {
-    return false;
-  }
-
-  if (!ValidElfHeaderSectionHeaderSize(head->kSectionHeaderSize)) {
-    return false;
-  }
-
-  if (!ValidElfHeaderSectionHeaderCount(head->kSectionHeaderCount)) {
-    return false;
-  }
-
-  if (!ValidElfHeaderSectionHeaderNamesIndex(head->kSectionHeaderNamesIndex)) {
-    return false;
-  }
   return true;
 }
 
@@ -532,9 +463,9 @@ std::string Header::ToString() const
   res << "ELF Header:"
       << "\n  Class:                   " << ElfHeaderClassString(kClass)
       << "\n  Data:                    " << ElfHeaderDataString(kData)
-      << "\n  ShortVersion:            " << (uint16_t)kShortVersion
+      << "\n  ShortVersion:            " << static_cast<unsigned>(kShortVersion)
       << "\n  OsAbi:                   " << ElfHeaderOsAbiString(kOsAbi)
-      << "\n  AbiVersion:              " << (uint16_t)kAbiVersion
+      << "\n  AbiVersion:              " << static_cast<unsigned>(kAbiVersion)
       << "\n  Type:                    " << ElfHeaderTypeString(kType)
       << "\n  Machine:                 " << ElfHeaderMachineString(kMachine)
       << std::hex

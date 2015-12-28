@@ -9,6 +9,8 @@ using Symbol = ElfBinary::Symbol;
 
 namespace {
 
+// Set of helper methods that convert enumerated values into strings.
+
 static const char *ElfSymbolTypeToString(uint8_t kInfo)
 {
   switch (kInfo & 0xf) {
@@ -17,8 +19,8 @@ static const char *ElfSymbolTypeToString(uint8_t kInfo)
     case STT_FUNC: return "FUNCTION";
     case STT_SECTION: return "SECTION";
     case STT_FILE: return "FILE";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfSymbolBindingToString(uint8_t kInfo)
@@ -27,8 +29,8 @@ static const char *ElfSymbolBindingToString(uint8_t kInfo)
     case STB_LOCAL: return "LOCAL";
     case STB_GLOBAL: return "GLOBAL";
     case STB_WEAK: return "WEAK";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 static const char *ElfSymbolOtherToString(uint8_t kOther)
@@ -38,8 +40,8 @@ static const char *ElfSymbolOtherToString(uint8_t kOther)
     case STV_INTERNAL: return "INTERNAL";
     case STV_HIDDEN: return "HIDDEN";
     case STV_PROTECTED: return "PROTECTED";
+    default: return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 } // namespace
