@@ -560,28 +560,28 @@ ElfExecutable::Header *ParseElfHeader(const uint8_t *const buf)
 std::string ElfExecutable::Header::ToString() const
 {
   std::stringstream res;
-  res << "ELF Header:";
-  res << "\n  Class:                   " << ElfHeaderClassString(kClass);
-  res << "\n  Data:                    " << ElfHeaderDataString(kData);
-  res << "\n  ShortVersion:            " << (uint16_t)kShortVersion;
-  res << "\n  OsAbi:                   " << ElfHeaderOsAbiString(kOsAbi);
-  res << "\n  AbiVersion:              " << (uint16_t)kAbiVersion;
-  res << "\n  Type:                    " << ElfHeaderTypeString(kType);
-  res << "\n  Machine:                 " << ElfHeaderMachineString(kMachine);
-  res << std::hex;
-  res << "\n  LongVersion:             " << "0x" << kLongVersion;
-  res << "\n  EntryPoint:              " << "0x" << kEntryPoint;
-  res << std::dec;
-  res << "\n  ProgramHeaderOffset:     " << kProgramHeaderOffset;
-  res << "\n  SectionHeaderOffset:     " << kSectionHeaderOffset;
-  res << std::hex;
-  res << "\n  Flags:                   " << "0x" << kFlags;
-  res << std::dec;
-  res << "\n  HeaderSize:              " << kHeaderSize;
-  res << "\n  ProgramHeaderSize:       " << kProgramHeaderSize;
-  res << "\n  ProgramHeaderCount:      " << kProgramHeaderCount;
-  res << "\n  SectionHeaderSize:       " << kSectionHeaderSize;
-  res << "\n  SectionHeaderCount:      " << kSectionHeaderCount;
-  res << "\n  SectionHeaderNamesIndex: " << kSectionHeaderNamesIndex;
+  res << "ELF Header:"
+      << "\n  Class:                   " << ElfHeaderClassString(kClass)
+      << "\n  Data:                    " << ElfHeaderDataString(kData)
+      << "\n  ShortVersion:            " << (uint16_t)kShortVersion
+      << "\n  OsAbi:                   " << ElfHeaderOsAbiString(kOsAbi)
+      << "\n  AbiVersion:              " << (uint16_t)kAbiVersion
+      << "\n  Type:                    " << ElfHeaderTypeString(kType)
+      << "\n  Machine:                 " << ElfHeaderMachineString(kMachine)
+      << std::hex
+      << "\n  LongVersion:             " << "0x" << kLongVersion
+      << "\n  EntryPoint:              " << "0x" << kEntryPoint
+      << std::dec
+      << "\n  ProgramHeaderOffset:     " << kProgramHeaderOffset
+      << "\n  SectionHeaderOffset:     " << kSectionHeaderOffset
+      << std::hex
+      << "\n  Flags:                   " << "0x" << kFlags
+      << std::dec
+      << "\n  HeaderSize:              " << kHeaderSize
+      << "\n  ProgramHeaderSize:       " << kProgramHeaderSize
+      << "\n  ProgramHeaderCount:      " << kProgramHeaderCount
+      << "\n  SectionHeaderSize:       " << kSectionHeaderSize
+      << "\n  SectionHeaderCount:      " << kSectionHeaderCount
+      << "\n  SectionHeaderNamesIndex: " << kSectionHeaderNamesIndex;
   return res.str();
 }

@@ -344,17 +344,16 @@ ParseElfSectionHeaders(const uint8_t *const buf,
 std::string ElfExecutable::SectionHeader::ToString() const
 {
   std::stringstream res;
-  res << "\n  Name:             " << kStringName;
-  res << "\n  Type:             " << ElfSectionHeaderTypeString(kType);
-  res << "\n  Flags:            " << ElfSectionHeaderFlagsString(kFlags);
-  res << std::hex;
-  res << "\n  Address:          " << "0x" << kAddress;
-  res << "\n  Offset:           " << "0x" << kOffset;
-  res << "\n  Size:             " << "0x" << kSize;
-  res << "\n  Link:             " << "0x" << kLink;
-  res << "\n  Info:             " << "0x" << kInfo;
-  res << "\n  AddressAlignment: " << "0x" << kAddressAlignment;
-  res << "\n  EntrySize:        " << "0x" << kEntrySize;
-  res << std::dec;
+  res << "\n  Name:             " << kStringName
+      << "\n  Type:             " << ElfSectionHeaderTypeString(kType)
+      << "\n  Flags:            " << ElfSectionHeaderFlagsString(kFlags)
+      << std::hex
+      << "\n  Address:          " << "0x" << kAddress
+      << "\n  Offset:           " << "0x" << kOffset
+      << "\n  Size:             " << "0x" << kSize
+      << "\n  Link:             " << "0x" << kLink
+      << "\n  Info:             " << "0x" << kInfo
+      << "\n  AddressAlignment: " << "0x" << kAddressAlignment
+      << "\n  EntrySize:        " << "0x" << kEntrySize;
   return res.str();
 }

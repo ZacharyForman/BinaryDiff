@@ -83,19 +83,19 @@ const std::vector<ElfExecutable::SectionHeader>
 std::string ElfExecutable::ToString() const
 {
   std::stringstream res;
-  res << filename() << ":\n";
-  res << header_->ToString() << '\n';
+  res << filename() << ":\n"
+      << header_->ToString() << '\n';
   for (unsigned i = 0; i < program_headers_.size(); i++) {
-    res << "\nProgram Header " << i << ": ";
-    res << program_headers_[i].ToString() << '\n';
+    res << "\nProgram Header " << i << ": "
+        << program_headers_[i].ToString() << '\n';
   }
   for (unsigned i = 0; i < section_headers_.size(); i++) {
-    res << "\nSection Header " << i << ": ";
-    res << section_headers_[i].ToString() << '\n';
+    res << "\nSection Header " << i << ": "
+        << section_headers_[i].ToString() << '\n';
   }
   for (unsigned i = 0; i < symbol_tables_.size(); i++) {
-    res << "\nSymbol table " << symbol_tables_[i].get_type() << ":";
-    res << symbol_tables_[i].ToString() << '\n';
+    res << "\nSymbol table " << symbol_tables_[i].get_type() << ":"
+        << symbol_tables_[i].ToString() << '\n';
   }
   return res.str();
 }
