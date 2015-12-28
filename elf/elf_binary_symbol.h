@@ -1,12 +1,12 @@
-#ifndef BINARY_MATCHER_ELF_EXECUTABLE_SYMBOL_H
-#define BINARY_MATCHER_ELF_EXECUTABLE_SYMBOL_H
+#ifndef BINARY_MATCHER_ELF_BINARY_SYMBOL_H
+#define BINARY_MATCHER_ELF_BINARY_SYMBOL_H
 
-#include "elf/elf_executable.h"
+#include "elf/elf_binary.h"
 
 #include <stdint.h>
 #include <string>
 
-struct ElfExecutable::Symbol {
+struct ElfBinary::Symbol {
   const uint32_t kName;
   const char *const kStringName;
   const uint64_t kValue;
@@ -18,4 +18,4 @@ struct ElfExecutable::Symbol {
   std::string ToString() const;
 };
 
-#endif // BINARY_MATCHER_ELF_EXECUTABLE_SYMBOL_H
+#endif // BINARY_MATCHER_ELF_BINARY_SYMBOL_H

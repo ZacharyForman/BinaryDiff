@@ -1,4 +1,4 @@
-#include "executable.h"
+#include "binary.h"
 #include "file.h"
 
 #include <memory>
@@ -9,14 +9,14 @@ int main(int argc, const char **argv)
 {
   const char *const kBinaryName = argc > 1 ? argv[1] : argv[0];
 
-  std::unique_ptr<Executable>
-      executable(Executable::ReadFromFile(kBinaryName));
+  std::unique_ptr<Binary>
+      binary(Binary::ReadFromFile(kBinaryName));
 
-  if (!executable) {
+  if (!binary) {
     fprintf(stderr, "Could not parse %s successfully\n", kBinaryName);
   }
 
-  printf("%s", executable->ToString().c_str());
+  printf("%s", binary->ToString().c_str());
 
   return 0;
 }

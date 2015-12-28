@@ -1,14 +1,14 @@
-#include "elf/elf_executable.h"
-#include "elf/elf_executable_header.h"
-#include "elf/elf_executable_section_header.h"
+#include "elf/elf_binary.h"
+#include "elf/elf_binary_header.h"
+#include "elf/elf_binary_section_header.h"
 
 #include <elf.h>
 #include <iomanip>
 #include <sstream>
 #include <vector>
 
-using Header = ElfExecutable::Header;
-using SectionHeader = ElfExecutable::SectionHeader;
+using Header = ElfBinary::Header;
+using SectionHeader = ElfBinary::SectionHeader;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -202,7 +202,7 @@ ValidElfSectionHeaderEntrySize(const uint64_t kEntrySize)
   return true;
 }
 
-static const char *const ElfSectionHeaderTypeString(const uint32_t kType)
+static const char *ElfSectionHeaderTypeString(const uint32_t kType)
 {
   switch (kType) {
     case SHT_NULL: return "NULL";
@@ -231,7 +231,7 @@ static const char *const ElfSectionHeaderTypeString(const uint32_t kType)
   return "UNKNOWN";
 }
 
-static const char *const ElfSectionHeaderFlagsString(const uint32_t kFlags)
+static const char *ElfSectionHeaderFlagsString(const uint32_t kFlags)
 {
   switch (kFlags & (SHF_WRITE|SHF_ALLOC|SHF_EXECINSTR)) {
     case SHF_WRITE: return "W  ";

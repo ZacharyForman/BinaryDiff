@@ -1,6 +1,6 @@
-#include "elf/elf_executable.h"
-#include "elf/elf_executable_header.h"
-#include "elf/elf_executable_program_header.h"
+#include "elf/elf_binary.h"
+#include "elf/elf_binary_header.h"
+#include "elf/elf_binary_program_header.h"
 
 #include <elf.h>
 #include <iomanip>
@@ -8,13 +8,16 @@
 #include <sstream>
 #include <vector>
 
-using Header = ElfExecutable::Header;
-using ProgramHeader = ElfExecutable::ProgramHeader;
+using Header = ElfBinary::Header;
+using ProgramHeader = ElfBinary::ProgramHeader;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
 
 namespace {
+
+// Set of helper methods that extract fields from
+// the buffer.
 
 static uint32_t
 ExtractElfProgramHeaderType(const uint8_t *const buf,
@@ -99,6 +102,8 @@ ExtractElfProgramHeaderAlign(const uint8_t *const buf,
   }
   return -1;
 }
+
+// Set of helper methods that validate individual fields.
 
 static bool
 ValidElfProgramHeaderType(const uint32_t kType)
@@ -185,7 +190,9 @@ ExtractElfSectionHeaderInfo(const uint8_t *const buf,
   return -1;
 }
 
-static const char *const ElfProgramHeaderTypeString(const uint32_t kType)
+// Set of helper methods that convert enumerated values into strings.
+
+static const char *ElfProgramHeaderTypeString(const uint32_t kType)
 {
   switch (kType) {
     case PT_NULL: return "NULL";
@@ -205,7 +212,7 @@ static const char *const ElfProgramHeaderTypeString(const uint32_t kType)
   return "UNKNOWN";
 }
 
-static const char *const ElfProgramHeaderFlagsString(const uint32_t kFlags)
+static const char *ElfProgramHeaderFlagsString(const uint32_t kFlags)
 {
   switch (kFlags) {
     case PF_X: return "  X";
@@ -273,6 +280,7 @@ std::vector<ProgramHeader> ParseElfProgramHeaders(const uint8_t *const buf,
 
   const uint8_t *program_header = buf + kOffset;
 
+  // If count == PN_XNUM, we have to get the count from the section header.
   if (count == PN_XNUM) {
     count = ExtractElfSectionHeaderInfo(program_header, header);
   }

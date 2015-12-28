@@ -1,8 +1,8 @@
-#include "elf/elf_executable.h"
-#include "elf/elf_executable_header.h"
-#include "elf/elf_executable_program_header.h"
-#include "elf/elf_executable_section_header.h"
-#include "elf/elf_executable_symbol_table.h"
+#include "elf/elf_binary.h"
+#include "elf/elf_binary_header.h"
+#include "elf/elf_binary_program_header.h"
+#include "elf/elf_binary_section_header.h"
+#include "elf/elf_binary_symbol_table.h"
 #include "file.h"
 
 #include <sstream>
@@ -10,7 +10,7 @@
 #include <string.h>
 #include <elf.h>
 
-ElfExecutable *ElfExecutable::ParseFile(const File *file)
+ElfBinary *ElfBinary::ParseFile(const File *file)
 {
   const uint8_t *const buf = file->buffer();
 
@@ -42,46 +42,52 @@ ElfExecutable *ElfExecutable::ParseFile(const File *file)
     SymbolTable::Parse(".symtab", buf, header.get(), section_headers),
   };
 
-  return new ElfExecutable(file, header.release(),
+  return new ElfBinary(file, header.release(),
                            std::move(program_headers),
                            std::move(section_headers),
                            std::move(symbol_tables));
 }
 
-ElfExecutable::ElfExecutable(const File *file,
+ElfBinary::ElfBinary(const File *file,
                              Header *header,
                              std::vector<ProgramHeader> &&program_headers,
                              std::vector<SectionHeader> &&section_headers,
                              std::vector<SymbolTable> &&symbol_tables)
-  : Executable(file),
+  : Binary(file),
     header_(header),
     program_headers_(program_headers),
     section_headers_(section_headers),
     symbol_tables_(symbol_tables) { }
 
-Executable::Type ElfExecutable::GetType() const
+Binary::Type ElfBinary::GetType() const
 {
-  return Executable::Type::kElf;
+  return Binary::Type::kElf;
 }
 
-const ElfExecutable::Header *ElfExecutable::header() const
+const ElfBinary::Header *ElfBinary::header() const
 {
   return header_.get();
 }
 
-const std::vector<ElfExecutable::ProgramHeader>
-&ElfExecutable::program_headers() const
+const std::vector<ElfBinary::ProgramHeader>
+&ElfBinary::program_headers() const
 {
   return program_headers_;
 }
 
-const std::vector<ElfExecutable::SectionHeader>
-&ElfExecutable::section_headers() const
+const std::vector<ElfBinary::SectionHeader>
+&ElfBinary::section_headers() const
 {
   return section_headers_;
 }
 
-std::string ElfExecutable::ToString() const
+const std::vector<ElfBinary::SymbolTable>
+&ElfBinary::symbol_tables() const
+{
+  return symbol_tables_;
+}
+
+std::string ElfBinary::ToString() const
 {
   std::stringstream res;
   res << filename() << ":\n"
@@ -95,10 +101,10 @@ std::string ElfExecutable::ToString() const
         << section_headers_[i].ToString() << '\n';
   }
   for (unsigned i = 0; i < symbol_tables_.size(); i++) {
-    if (!strcmp(symbol_tables_[i].get_type(), "N/A")) {
+    if (!strcmp(symbol_tables_[i].type(), "N/A")) {
       continue;
     }
-    res << "\nSymbol table " << symbol_tables_[i].get_type() << ":"
+    res << "\nSymbol table " << symbol_tables_[i].type() << ":"
         << symbol_tables_[i].ToString() << '\n';
   }
   return res.str();

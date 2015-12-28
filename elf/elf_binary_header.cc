@@ -1,16 +1,19 @@
-#include "elf/elf_executable.h"
-#include "elf/elf_executable_header.h"
+#include "elf/elf_binary.h"
+#include "elf/elf_binary_header.h"
 
 #include <elf.h>
 #include <iomanip>
 #include <sstream>
 
-using Header = ElfExecutable::Header;
+using Header = ElfBinary::Header;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
 
 namespace {
+
+// Set of helper methods that extract fields from
+// the buffer.
 
 static uint8_t
 ExtractElfHeaderClass(const uint8_t *const buf)
@@ -159,6 +162,8 @@ ExtractElfHeaderSectionHeaderNamesIndex(const uint8_t *const buf)
   }
   return -1;
 }
+
+// Set of helper methods that validate individual fields.
 
 static bool
 ValidElfHeaderClass(const uint8_t kClass)
@@ -340,7 +345,9 @@ ValidElfHeaderSectionHeaderNamesIndex(const uint16_t kSectionHeaderNamesIndex)
   return true;
 }
 
-static const char *const ElfHeaderClassString(const uint8_t kClass)
+// Set of helper methods that convert enumerated values into strings.
+
+static const char *ElfHeaderClassString(const uint8_t kClass)
 {
   switch (kClass) {
     case ELFCLASS32: return "ELF32";
@@ -349,7 +356,7 @@ static const char *const ElfHeaderClassString(const uint8_t kClass)
   return "UNKNOWN";
 }
 
-static const char *const ElfHeaderDataString(const uint8_t kData)
+static const char *ElfHeaderDataString(const uint8_t kData)
 {
   switch (kData) {
     case ELFDATA2LSB: return "2's complement, little endian";
@@ -358,7 +365,7 @@ static const char *const ElfHeaderDataString(const uint8_t kData)
   return "UNKNOWN";
 }
 
-static const char *const ElfHeaderOsAbiString(const uint8_t kOsAbi)
+static const char *ElfHeaderOsAbiString(const uint8_t kOsAbi)
 {
   switch (kOsAbi) {
     case ELFOSABI_SYSV: return "UNIX System V ABI";
@@ -375,18 +382,18 @@ static const char *const ElfHeaderOsAbiString(const uint8_t kOsAbi)
   return "UNKNOWN";
 }
 
-static const char *const ElfHeaderTypeString(const uint16_t kType)
+static const char *ElfHeaderTypeString(const uint16_t kType)
 {
   switch (kType) {
     case ET_REL: return "Relocatable";
-    case ET_EXEC: return "Executable";
+    case ET_EXEC: return "Binary";
     case ET_DYN: return "Shared Object";
     case ET_CORE: return "Core dump";
   }
   return "UNKNOWN";
 }
 
-static const char *const ElfHeaderMachineString(const uint16_t kMachine)
+static const char *ElfHeaderMachineString(const uint16_t kMachine)
 {
   switch (kMachine) {
     case EM_M32: return "AT&T WE 32100";

@@ -1,14 +1,14 @@
-#include "elf/elf_executable_symbol_table.h"
+#include "elf/elf_binary_symbol_table.h"
 
 #include <elf.h>
 #include <sstream>
 #include <string>
 #include <string.h>
 
-using Header = ElfExecutable::Header;
-using SectionHeader = ElfExecutable::SectionHeader;
-using Symbol = ElfExecutable::Symbol;
-using SymbolTable = ElfExecutable::SymbolTable;
+using Header = ElfBinary::Header;
+using SectionHeader = ElfBinary::SectionHeader;
+using Symbol = ElfBinary::Symbol;
+using SymbolTable = ElfBinary::SymbolTable;
 
 #define EXTRACT_ELF_FIELD(bits, offset) \
   *((uint##bits##_t*)(buf+(offset)))
@@ -81,7 +81,7 @@ ExtractElfSymbolSectionHeaderIndex(const uint8_t *const buf,
 
 #undef EXTRACT_ELF_FIELD
 
-const char *const SymbolTable::get_type() const
+const char *SymbolTable::type() const
 {
   return type_;
 }
