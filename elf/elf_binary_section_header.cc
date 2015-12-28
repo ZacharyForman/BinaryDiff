@@ -185,7 +185,7 @@ static const char *ElfSectionHeaderTypeString(const uint32_t kType)
   }
 }
 
-static const char *ElfSectionHeaderFlagsString(const uint32_t kFlags)
+static const char *ElfSectionHeaderFlagsString(const uint64_t kFlags)
 {
   switch (kFlags & (SHF_WRITE|SHF_ALLOC|SHF_EXECINSTR)) {
     case SHF_WRITE: return "W  ";

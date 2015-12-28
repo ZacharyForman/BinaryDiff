@@ -16,6 +16,10 @@ public:
   // an error to stderr and exits the program.
   File(const char *const filename);
 
+  // Delete copy constructor and assignment.
+  File(const File&) = delete;
+  File &operator=(const File&) = delete;
+
   // Releases the resources associated with the File.
   // If there is an error releasing resources, prints
   // an error to stderr and exits the program.

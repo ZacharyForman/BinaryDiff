@@ -126,6 +126,8 @@ SymbolTable::SymbolTable(
       address_to_symbol_(address_to_symbol),
       name_to_symbol_(name_to_symbol) { }
 
+SymbolTable::~SymbolTable() { }
+
 SymbolTable SymbolTable::Parse(
     const char *const table_type,
     const uint8_t *const buf,

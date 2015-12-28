@@ -18,6 +18,8 @@ Binary::Type Binary::GetType() const
 
 Binary::Binary(const File *file) : binary_(file) { }
 
+Binary::~Binary() { }
+
 Binary::Type Binary::GetBinaryType(const File *file)
 {
   // Check magic numbers to see if it's an ELF file.

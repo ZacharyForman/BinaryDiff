@@ -26,6 +26,9 @@ public:
   // or otherwise not an binary), returns nullptr.
   static Binary *ReadFromFile(const char *const f);
 
+  // Empty destructor.
+  virtual ~Binary();
+
   // Returns the filename of the underlying File associated
   // with the binary.
   const char *filename() const;

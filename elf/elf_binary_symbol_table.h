@@ -27,6 +27,12 @@ public:
   // Constructs a string representation of the symbol table
   // that contains each symbol in the table's string representation.
   std::string ToString() const;
+
+  // Default copy and assignment constructors do the right thing.
+  SymbolTable(const SymbolTable&) = default;
+  SymbolTable &operator=(const ElfBinary::SymbolTable&) = default;
+
+  ~SymbolTable();
 private:
   SymbolTable(const char *const type,
       std::vector<ElfBinary::Symbol> &&symbols,
