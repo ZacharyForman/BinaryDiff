@@ -19,14 +19,14 @@ namespace {
 // Set of helper methods that extract fields from
 // the buffer.
 
-static uint32_t
+inline static uint32_t
 ExtractElfProgramHeaderType(const uint8_t *const buf,
     const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
-static uint32_t
+inline static uint32_t
 ExtractElfProgramHeaderFlags(const uint8_t *const buf,
     const Header *const header)
 {
@@ -37,7 +37,7 @@ ExtractElfProgramHeaderFlags(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfProgramHeaderOffset(const uint8_t *const buf,
     const Header *const header)
 {
@@ -48,7 +48,7 @@ ExtractElfProgramHeaderOffset(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfProgramHeaderVirtualAddress(const uint8_t *const buf,
     const Header *const header)
 {
@@ -59,7 +59,7 @@ ExtractElfProgramHeaderVirtualAddress(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfProgramHeaderPhysicalAddress(const uint8_t *const buf,
     const Header *const header)
 {
@@ -70,7 +70,7 @@ ExtractElfProgramHeaderPhysicalAddress(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfProgramHeaderFileSize(const uint8_t *const buf,
     const Header *const header)
 {
@@ -81,7 +81,7 @@ ExtractElfProgramHeaderFileSize(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfProgramHeaderMemorySize(const uint8_t *const buf,
     const Header *const header)
 {
@@ -92,7 +92,7 @@ ExtractElfProgramHeaderMemorySize(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfProgramHeaderAlign(const uint8_t *const buf,
     const Header *const header)
 {
@@ -105,7 +105,7 @@ ExtractElfProgramHeaderAlign(const uint8_t *const buf,
 
 // Set of helper methods that validate individual fields.
 
-static bool
+inline static bool
 ValidElfProgramHeaderType(const uint32_t kType)
 {
   switch (kType) {
@@ -128,7 +128,7 @@ ValidElfProgramHeaderType(const uint32_t kType)
   return false;
 }
 
-static bool
+inline static bool
 ValidElfProgramHeaderFlags(const uint32_t kFlags)
 {
   switch (kFlags) {
@@ -145,7 +145,7 @@ ValidElfProgramHeaderFlags(const uint32_t kFlags)
   return false;
 }
 
-static uint32_t
+inline static uint32_t
 ExtractElfSectionHeaderInfo(const uint8_t *const buf,
     const Header *const header)
 {
@@ -158,7 +158,8 @@ ExtractElfSectionHeaderInfo(const uint8_t *const buf,
 
 // Set of helper methods that convert enumerated values into strings.
 
-static const char *ElfProgramHeaderTypeString(const uint32_t kType)
+inline static const char
+*ElfProgramHeaderTypeString(const uint32_t kType)
 {
   switch (kType) {
     case PT_NULL: return "NULL";
@@ -178,7 +179,8 @@ static const char *ElfProgramHeaderTypeString(const uint32_t kType)
   }
 }
 
-static const char *ElfProgramHeaderFlagsString(const uint32_t kFlags)
+inline static const char
+*ElfProgramHeaderFlagsString(const uint32_t kFlags)
 {
   switch (kFlags) {
     case PF_X: return "  X";

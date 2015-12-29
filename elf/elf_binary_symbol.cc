@@ -11,7 +11,7 @@ namespace {
 
 // Set of helper methods that convert enumerated values into strings.
 
-static const char *ElfSymbolTypeToString(uint8_t kInfo)
+inline static const char *ElfSymbolTypeToString(uint8_t kInfo)
 {
   switch (kInfo & 0xf) {
     case STT_NOTYPE: return "NOTYPE";
@@ -23,7 +23,7 @@ static const char *ElfSymbolTypeToString(uint8_t kInfo)
   }
 }
 
-static const char *ElfSymbolBindingToString(uint8_t kInfo)
+inline static const char *ElfSymbolBindingToString(uint8_t kInfo)
 {
   switch (kInfo >> 4) {
     case STB_LOCAL: return "LOCAL";
@@ -33,7 +33,7 @@ static const char *ElfSymbolBindingToString(uint8_t kInfo)
   }
 }
 
-static const char *ElfSymbolOtherToString(uint8_t kOther)
+inline static const char *ElfSymbolOtherToString(uint8_t kOther)
 {
   switch (kOther & 0x7) {
     case STV_DEFAULT: return "DEFAULT";

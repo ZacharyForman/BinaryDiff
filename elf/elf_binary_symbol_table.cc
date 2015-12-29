@@ -18,14 +18,14 @@ namespace {
 // Set of helper methods that extract fields from
 // the buffer.
 
-static uint32_t
+inline static uint32_t
 ExtractElfSymbolName(const uint8_t *const buf,
     const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSymbolValue(const uint8_t *const buf,
     const Header *const header)
 {
@@ -36,7 +36,7 @@ ExtractElfSymbolValue(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSymbolSize(const uint8_t *const buf,
     const Header *const header)
 {
@@ -47,7 +47,7 @@ ExtractElfSymbolSize(const uint8_t *const buf,
   }
 }
 
-static uint8_t
+inline static uint8_t
 ExtractElfSymbolInfo(const uint8_t *const buf,
     const Header *const header)
 {
@@ -58,7 +58,7 @@ ExtractElfSymbolInfo(const uint8_t *const buf,
   }
 }
 
-static uint8_t
+inline static uint8_t
 ExtractElfSymbolOther(const uint8_t *const buf,
     const Header *const header)
 {
@@ -69,7 +69,7 @@ ExtractElfSymbolOther(const uint8_t *const buf,
   }
 }
 
-static uint16_t
+inline static uint16_t
 ExtractElfSymbolSectionHeaderIndex(const uint8_t *const buf,
     const Header *const header)
 {
@@ -136,7 +136,6 @@ SymbolTable SymbolTable::Parse(
 {
   std::string strtab_name(table_type);
   strtab_name.replace(strtab_name.find("sym"), 3, "str");
-  std::vector<Symbol> symbols;
 
   const SectionHeader *symbol_table_header = nullptr;
   const SectionHeader *string_table_header = nullptr;
@@ -167,6 +166,9 @@ SymbolTable SymbolTable::Parse(
   const char *const string_table_base
       = reinterpret_cast<const char*>(buf) + string_table_header->kOffset;
 
+  std::vector<Symbol> symbols;
+  symbols.reserve(kEntries);
+
   for (unsigned i = 0; i < kEntries; i++) {
     const uint8_t *symbol_table_entry = symbol_table_base + i*kEntrySize;
 
@@ -183,6 +185,8 @@ SymbolTable SymbolTable::Parse(
 
   std::unordered_map<uint64_t, Symbol*> address_to_symbol;
   std::unordered_map<std::string, Symbol*> name_to_symbol;
+  address_to_symbol.reserve(kEntries);
+  name_to_symbol.reserve(kEntries);
 
   for (Symbol &symbol : symbols) {
     address_to_symbol[symbol.kValue] = &symbol;

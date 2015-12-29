@@ -18,21 +18,21 @@ namespace {
 // Set of helper methods that extract fields from
 // the buffer.
 
-static uint32_t
+inline static uint32_t
 ExtractElfSectionHeaderName(const uint8_t *const buf,
     const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 0);
 }
 
-static uint32_t
+inline static uint32_t
 ExtractElfSectionHeaderType(const uint8_t *const buf,
     const Header *const)
 {
   return EXTRACT_ELF_FIELD(32, 4);
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSectionHeaderFlags(const uint8_t *const buf,
     const Header *const header)
 {
@@ -43,7 +43,7 @@ ExtractElfSectionHeaderFlags(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSectionHeaderAddress(const uint8_t *const buf,
     const Header *const header)
 {
@@ -54,7 +54,7 @@ ExtractElfSectionHeaderAddress(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSectionHeaderOffset(const uint8_t *const buf,
     const Header *const header)
 {
@@ -65,7 +65,7 @@ ExtractElfSectionHeaderOffset(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSectionHeaderSize(const uint8_t *const buf,
     const Header *const header)
 {
@@ -76,7 +76,7 @@ ExtractElfSectionHeaderSize(const uint8_t *const buf,
   }
 }
 
-static uint32_t
+inline static uint32_t
 ExtractElfSectionHeaderLink(const uint8_t *const buf,
     const Header *const header)
 {
@@ -87,7 +87,7 @@ ExtractElfSectionHeaderLink(const uint8_t *const buf,
   }
 }
 
-static uint32_t
+inline static uint32_t
 ExtractElfSectionHeaderInfo(const uint8_t *const buf,
     const Header *const header)
 {
@@ -98,7 +98,7 @@ ExtractElfSectionHeaderInfo(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSectionHeaderAddressAlignment(const uint8_t *const buf,
     const Header *const header)
 {
@@ -109,7 +109,7 @@ ExtractElfSectionHeaderAddressAlignment(const uint8_t *const buf,
   }
 }
 
-static uint64_t
+inline static uint64_t
 ExtractElfSectionHeaderEntrySize(const uint8_t *const buf,
     const Header *const header)
 {
@@ -122,7 +122,7 @@ ExtractElfSectionHeaderEntrySize(const uint8_t *const buf,
 
 // Set of helper methods that validate individual fields.
 
-static bool
+inline static bool
 ValidElfSectionHeaderType(const uint32_t kType)
 {
   switch (kType) {
@@ -156,7 +156,8 @@ ValidElfSectionHeaderType(const uint32_t kType)
 
 // Set of helper methods that convert enumerated values into strings.
 
-static const char *ElfSectionHeaderTypeString(const uint32_t kType)
+inline static const char
+*ElfSectionHeaderTypeString(const uint32_t kType)
 {
   switch (kType) {
     case SHT_NULL: return "NULL";
@@ -185,7 +186,8 @@ static const char *ElfSectionHeaderTypeString(const uint32_t kType)
   }
 }
 
-static const char *ElfSectionHeaderFlagsString(const uint64_t kFlags)
+inline static const char
+*ElfSectionHeaderFlagsString(const uint64_t kFlags)
 {
   switch (kFlags & (SHF_WRITE|SHF_ALLOC|SHF_EXECINSTR)) {
     case SHF_WRITE: return "W  ";
